@@ -4,7 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -15,7 +17,12 @@ import java.util.UUID;
 
 @Getter
 @MappedSuperclass
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class VersionedEntity {
+
+    protected VersionedEntity(UUID id) {
+        assignId(id);
+    }
 
     @Id
     private UUID id;
