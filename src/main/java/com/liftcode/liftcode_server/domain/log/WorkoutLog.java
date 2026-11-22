@@ -1,5 +1,6 @@
-package com.liftcode.liftcode_server.domain;
+package com.liftcode.liftcode_server.domain.log;
 
+import com.liftcode.liftcode_server.domain.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 
