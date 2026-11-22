@@ -5,9 +5,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -19,12 +19,18 @@ import static jakarta.persistence.FetchType.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExerciseLog extends VersionedEntity {
 
-    public ExerciseLog(UUID id, WorkoutLog workoutLog, String exerciseKey, int position, String trackingType, boolean supersetWithNext) {
+    public ExerciseLog(
+            UUID id,
+            @NonNull WorkoutLog workoutLog,
+            @NonNull String exerciseKey,
+            int position,
+            @NonNull String trackingType,
+            boolean supersetWithNext) {
         super(id);
-        this.workoutLog = Objects.requireNonNull(workoutLog, "workoutLog");
-        this.exerciseKey = Objects.requireNonNull(exerciseKey, "exerciseKey");
+        this.workoutLog = workoutLog;
+        this.exerciseKey = exerciseKey;
         this.position = position;
-        this.trackingType = Objects.requireNonNull(trackingType, "trackingType");
+        this.trackingType = trackingType;
         this.supersetWithNext = supersetWithNext;
     }
 

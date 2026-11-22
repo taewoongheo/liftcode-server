@@ -6,9 +6,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -20,10 +20,10 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workout extends VersionedEntity {
 
-    public Workout(UUID id, User user, String name) {
+    public Workout(UUID id, @NonNull User user, @NonNull String name) {
         super(id);
-        this.user = Objects.requireNonNull(user, "user");
-        this.name = Objects.requireNonNull(name, "name");
+        this.user = user;
+        this.name = name;
     }
 
     @ManyToOne(fetch = LAZY, optional = false)

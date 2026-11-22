@@ -5,9 +5,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.*;
@@ -19,12 +19,17 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SetLog extends VersionedEntity {
 
-    public SetLog(UUID id, ExerciseLog exerciseLog, int position, String setType, String actualWeightUnit) {
+    public SetLog(
+            UUID id,
+            @NonNull ExerciseLog exerciseLog,
+            int position,
+            @NonNull String setType,
+            @NonNull String actualWeightUnit) {
         super(id);
-        this.exerciseLog = Objects.requireNonNull(exerciseLog, "exerciseLog");
+        this.exerciseLog = exerciseLog;
         this.position = position;
-        this.setType = Objects.requireNonNull(setType, "setType");
-        this.actualWeightUnit = Objects.requireNonNull(actualWeightUnit, "actualWeightUnit");
+        this.setType = setType;
+        this.actualWeightUnit = actualWeightUnit;
     }
 
     @ManyToOne(fetch = LAZY, optional = false)

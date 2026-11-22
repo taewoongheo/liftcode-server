@@ -6,10 +6,10 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -21,15 +21,21 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkoutLog extends VersionedEntity {
 
-    public WorkoutLog(UUID id, User user, String workoutNameSnapshot, Instant startedAt, Instant completedAt,
-                      int durationSeconds, String notes) {
+    public WorkoutLog(
+            UUID id,
+            @NonNull User user,
+            @NonNull String workoutNameSnapshot,
+            @NonNull Instant startedAt,
+            @NonNull Instant completedAt,
+            int durationSeconds,
+            @NonNull String notes) {
         super(id);
-        this.user = Objects.requireNonNull(user, "user");
-        this.workoutNameSnapshot = Objects.requireNonNull(workoutNameSnapshot, "workoutNameSnapshot");
-        this.startedAt = Objects.requireNonNull(startedAt, "startedAt");
-        this.completedAt = Objects.requireNonNull(completedAt, "completedAt");
+        this.user = user;
+        this.workoutNameSnapshot = workoutNameSnapshot;
+        this.startedAt = startedAt;
+        this.completedAt = completedAt;
         this.durationSeconds = durationSeconds;
-        this.notes = Objects.requireNonNull(notes, "notes");
+        this.notes = notes;
     }
 
     /*

@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -17,10 +17,15 @@ import static jakarta.persistence.CascadeType.ALL;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkoutExercise extends OrderedRoutineItem {
 
-    public WorkoutExercise(UUID id, Workout workout, String exerciseKey, String sortKey, boolean supersetWithNext) {
+    public WorkoutExercise(
+            UUID id,
+            @NonNull Workout workout,
+            @NonNull String exerciseKey,
+            String sortKey,
+            boolean supersetWithNext) {
         super(id, sortKey);
-        this.workout = Objects.requireNonNull(workout, "workout");
-        this.exerciseKey = Objects.requireNonNull(exerciseKey, "exerciseKey");
+        this.workout = workout;
+        this.exerciseKey = exerciseKey;
         this.supersetWithNext = supersetWithNext;
     }
 

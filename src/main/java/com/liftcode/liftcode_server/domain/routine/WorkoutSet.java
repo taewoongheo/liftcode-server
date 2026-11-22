@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -18,10 +18,10 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkoutSet extends OrderedRoutineItem {
 
-    public WorkoutSet(UUID id, WorkoutExercise workoutExercise, String setType, String sortKey) {
+    public WorkoutSet(UUID id, @NonNull WorkoutExercise workoutExercise, @NonNull String setType, String sortKey) {
         super(id, sortKey);
-        this.workoutExercise = Objects.requireNonNull(workoutExercise, "workoutExercise");
-        this.setType = Objects.requireNonNull(setType, "setType");
+        this.workoutExercise = workoutExercise;
+        this.setType = setType;
     }
 
     @ManyToOne(fetch = LAZY, optional = false)
