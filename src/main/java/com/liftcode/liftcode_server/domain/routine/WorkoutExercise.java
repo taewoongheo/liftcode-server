@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,7 +36,7 @@ public class WorkoutExercise extends OrderedRoutineItem {
 
     @OneToMany(mappedBy = "workoutExercise", cascade = ALL)
     @OrderBy("sortKey ASC")
-    private List<WorkoutSet> workoutSets;
+    private List<WorkoutSet> workoutSets = new ArrayList<>();
 
     @Column(nullable = false)
     private String exerciseKey;

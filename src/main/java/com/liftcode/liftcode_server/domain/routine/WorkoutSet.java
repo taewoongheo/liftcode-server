@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ public class WorkoutSet extends OrderedRoutineItem {
 
     @OneToMany(mappedBy = "parentWorkoutSet", cascade = ALL)
     @OrderBy("sortKey ASC")
-    private List<WorkoutSet> workoutSets;
+    private List<WorkoutSet> workoutSets = new ArrayList<>();
 
     // TODO: setType 은 enum 으로 변경하기
     @Column(nullable = false)

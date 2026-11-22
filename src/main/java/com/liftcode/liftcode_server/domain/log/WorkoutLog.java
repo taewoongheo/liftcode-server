@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,7 +50,7 @@ public class WorkoutLog extends VersionedEntity {
     private User user;
 
     @OneToMany(mappedBy = "workoutLog", cascade = ALL)
-    private List<ExerciseLog> exerciseLogs;
+    private List<ExerciseLog> exerciseLogs = new ArrayList<>();
 
     @Column(nullable = false)
     private String workoutNameSnapshot;

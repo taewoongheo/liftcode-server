@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +40,7 @@ public class ExerciseLog extends VersionedEntity {
     private WorkoutLog workoutLog;
 
     @OneToMany(mappedBy = "exerciseLog", cascade = ALL)
-    private List<SetLog> setLogs;
+    private List<SetLog> setLogs = new ArrayList<>();
 
     @Column(nullable = false)
     private String exerciseKey;
