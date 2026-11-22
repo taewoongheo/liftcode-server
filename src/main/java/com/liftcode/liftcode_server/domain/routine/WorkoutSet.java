@@ -9,11 +9,8 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "workout_sets")
-public class WorkoutSet {
-
-    @Id
-    private UUID id;
+@Table(name = "workout_sets", uniqueConstraints = @UniqueConstraint(columnNames = {"workout_exercise_id", "sort_key"}))
+public class WorkoutSet extends RankedRoutineItem {
 
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "workout_exercise_id")
@@ -23,11 +20,13 @@ public class WorkoutSet {
     @JoinColumn(name = "parent_workout_set_id")
     private WorkoutSet parentWorkoutSet;
 
-    @OneToMany(mappedBy = "parentWorkoutSet", cascade = ALL)
-    private List<WorkoutSet> workoutSets;
+    UUID parentId() {
+        return parentWorkoutSet == null ? null : parentWorkoutSet.getId();
+    }
 
-    @Column(nullable = false)
-    private int position;
+    @OneToMany(mappedBy = "parentWorkoutSet", cascade = ALL)
+    @OrderBy("sortKey ASC")
+    private List<WorkoutSet> workoutSets;
 
     // setType 은 enum 으로 만들어야된다고 생각
     // enum 타입에 맞게 입력받는 target 값을 나누어야 된다고 생각

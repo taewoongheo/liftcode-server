@@ -21,11 +21,16 @@ public class Workout {
     private User user;
 
     @OneToMany(mappedBy = "workout", cascade = ALL)
+    @OrderBy("sortKey ASC")
     private List<WorkoutExercise> workoutExercises;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Version
     private int version;
+
+    public int getVersion() {
+        return version;
+    }
 }
