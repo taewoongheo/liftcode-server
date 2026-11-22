@@ -50,6 +50,7 @@ public class WorkoutLog extends VersionedEntity {
     private User user;
 
     @OneToMany(mappedBy = "workoutLog", cascade = ALL)
+    @OrderBy("sortKey ASC")
     private List<ExerciseLog> exerciseLogs = new ArrayList<>();
 
     @Column(nullable = false)

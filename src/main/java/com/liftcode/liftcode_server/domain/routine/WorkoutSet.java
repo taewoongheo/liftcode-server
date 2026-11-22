@@ -1,5 +1,6 @@
 package com.liftcode.liftcode_server.domain.routine;
 
+import com.liftcode.liftcode_server.domain.OrderedItem;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Table(name = "workout_sets", uniqueConstraints = @UniqueConstraint(columnNames = {"workout_exercise_id", "sort_key"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WorkoutSet extends OrderedRoutineItem {
+public class WorkoutSet extends OrderedItem {
 
     public WorkoutSet(UUID id, @NonNull WorkoutExercise workoutExercise, @NonNull String setType, String sortKey) {
         super(id, sortKey);

@@ -1,5 +1,6 @@
 package com.liftcode.liftcode_server.domain.routine;
 
+import com.liftcode.liftcode_server.domain.OrderedItem;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import static jakarta.persistence.CascadeType.ALL;
 @Table(name = "workout_exercises", uniqueConstraints = @UniqueConstraint(columnNames = {"workout_id", "sort_key"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WorkoutExercise extends OrderedRoutineItem {
+public class WorkoutExercise extends OrderedItem {
 
     public WorkoutExercise(
             UUID id,

@@ -1,6 +1,6 @@
 package com.liftcode.liftcode_server.domain.log;
 
-import com.liftcode.liftcode_server.domain.VersionedEntity;
+import com.liftcode.liftcode_server.domain.OrderedItem;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,20 +15,19 @@ import static jakarta.persistence.CascadeType.*;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "set_logs")
+@Table(name = "set_logs", uniqueConstraints = @UniqueConstraint(columnNames = {"exercise_log_id", "sort_key"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SetLog extends VersionedEntity {
+public class SetLog extends OrderedItem {
 
     public SetLog(
             UUID id,
             @NonNull ExerciseLog exerciseLog,
-            int position,
+            String sortKey,
             @NonNull String setType,
             @NonNull String actualWeightUnit) {
-        super(id);
+        super(id, sortKey);
         this.exerciseLog = exerciseLog;
-        this.position = position;
         this.setType = setType;
         this.actualWeightUnit = actualWeightUnit;
     }
@@ -42,10 +41,8 @@ public class SetLog extends VersionedEntity {
     private SetLog parentSetLog;
 
     @OneToMany(mappedBy = "parentSetLog", cascade = ALL)
+    @OrderBy("sortKey ASC")
     private List<SetLog> setLogs = new ArrayList<>();
-
-    @Column(nullable = false)
-    private int position;
 
     @Column(nullable = false)
     private String setType;

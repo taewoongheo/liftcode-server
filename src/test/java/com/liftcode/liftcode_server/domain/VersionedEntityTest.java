@@ -34,16 +34,24 @@ class VersionedEntityTest {
         var workout = new WorkoutLog(workoutLogId, user, "Workout", Instant.EPOCH, Instant.EPOCH, 0, "");
         em.persist(workout);
 
-        var exercise = new ExerciseLog(UUID.randomUUID(), workout, "squat", 0, "reps", false);
+        var exercise = new ExerciseLog(UUID.randomUUID(), workout, "squat", "a1", "reps", false);
         em.persist(exercise);
 
-        var set = new SetLog(UUID.randomUUID(), exercise, 0, "working", "kg");
+        var set = new SetLog(UUID.randomUUID(), exercise, "a1", "working", "kg");
         em.persist(set);
+        var earlierExercise = new ExerciseLog(UUID.randomUUID(), workout, "bench", "a0", "reps", false);
+        var earlierSet = new SetLog(UUID.randomUUID(), exercise, "a0", "warmup", "kg");
+        em.persist(earlierExercise);
+        em.persist(earlierSet);
         em.flush();
         em.clear();
 
         assertEquals(workoutLogId, workout.getId());
         var savedWorkout = em.find(WorkoutLog.class, workoutLogId);
+        assertEquals(List.of(earlierExercise.getId(), exercise.getId()),
+                savedWorkout.getExerciseLogs().stream().map(ExerciseLog::getId).toList());
+        assertEquals(List.of(earlierSet.getId(), set.getId()),
+                em.find(ExerciseLog.class, exercise.getId()).getSetLogs().stream().map(SetLog::getId).toList());
         for (VersionedEntity saved : List.of(savedWorkout, em.find(User.class, user.getId()),
                 em.find(ExerciseLog.class, exercise.getId()), em.find(SetLog.class, set.getId()))) {
             assertNotNull(saved.getCreatedAt());
