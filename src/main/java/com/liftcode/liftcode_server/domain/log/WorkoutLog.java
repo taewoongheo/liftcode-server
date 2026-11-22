@@ -1,11 +1,11 @@
 package com.liftcode.liftcode_server.domain.log;
 
 import com.liftcode.liftcode_server.domain.User;
+import com.liftcode.liftcode_server.domain.VersionedEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,10 +15,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @Table(name = "workout_logs")
 @Getter
-public class WorkoutLog {
-
-    @Id
-    private UUID id;
+public class WorkoutLog extends VersionedEntity {
 
     /*
     * workoutId 값을 저장
@@ -41,9 +38,6 @@ public class WorkoutLog {
 
     @Column(nullable = false)
     private String notes;
-
-    @Column(nullable = false)
-    private int version;
 
     @Column(nullable = false)
     private Instant startedAt;

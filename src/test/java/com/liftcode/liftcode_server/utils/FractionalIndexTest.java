@@ -1,4 +1,4 @@
-package com.liftcode.liftcode_server.domain.routine;
+package com.liftcode.liftcode_server.utils;
 
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;

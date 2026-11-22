@@ -1,20 +1,17 @@
 package com.liftcode.liftcode_server.domain.routine;
 
 import com.liftcode.liftcode_server.domain.User;
+import com.liftcode.liftcode_server.domain.VersionedEntity;
 import jakarta.persistence.*;
 
 import java.util.List;
-import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Table(name = "workouts")
-public class Workout {
-
-    @Id
-    private UUID id;
+public class Workout extends VersionedEntity {
 
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -26,11 +23,4 @@ public class Workout {
 
     @Column(nullable = false)
     private String name;
-
-    @Version
-    private int version;
-
-    public int getVersion() {
-        return version;
-    }
 }

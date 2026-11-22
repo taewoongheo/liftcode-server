@@ -1,10 +1,10 @@
 package com.liftcode.liftcode_server.domain.log;
 
+import com.liftcode.liftcode_server.domain.VersionedEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.util.List;
-import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.*;
 import static jakarta.persistence.FetchType.LAZY;
@@ -12,11 +12,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @Table(name = "set_logs")
 @Getter
-public class SetLog {
-
-    @Id
-    @GeneratedValue
-    private UUID id;
+public class SetLog extends VersionedEntity {
 
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "exercise_log_id", nullable = false)

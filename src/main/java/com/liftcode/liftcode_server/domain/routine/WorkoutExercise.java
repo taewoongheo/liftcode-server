@@ -1,6 +1,7 @@
 package com.liftcode.liftcode_server.domain.routine;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.util.List;
 
@@ -8,7 +9,8 @@ import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Table(name = "workout_exercises", uniqueConstraints = @UniqueConstraint(columnNames = {"workout_id", "sort_key"}))
-public class WorkoutExercise extends RankedRoutineItem {
+@Getter
+public class WorkoutExercise extends OrderedRoutineItem {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "workout_id", nullable = false)
@@ -23,8 +25,4 @@ public class WorkoutExercise extends RankedRoutineItem {
 
     @Column(nullable = false)
     private boolean supersetWithNext;
-
-    void disconnectSuperset() {
-        supersetWithNext = false;
-    }
 }

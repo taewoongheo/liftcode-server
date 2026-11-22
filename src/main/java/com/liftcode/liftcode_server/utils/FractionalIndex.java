@@ -1,17 +1,23 @@
-package com.liftcode.liftcode_server.domain.routine;
+package com.liftcode.liftcode_server.utils;
 
 import java.math.BigInteger;
 
-/** Base-62 fractions in (0, 1), stored without their common radix point. */
+/**
+ * Base-62 fractions in (0, 1), stored without their common radix point.
+ */
 public final class FractionalIndex {
+
     private static final String DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     // Two base digits are always retained: a0 < a0V < a1.
     private static final int MIN_WIDTH = 2;
     private static final BigInteger BASE = BigInteger.valueOf(DIGITS.length());
 
-    private FractionalIndex() {}
+    private FractionalIndex() {
+    }
 
-    /** Null bounds denote the beginning or end of the list. */
+    /**
+     * Null bounds denote the beginning or end of the list.
+     */
     public static String between(String left, String right) {
         if (left != null && right != null && left.compareTo(right) >= 0) {
             throw new IllegalArgumentException("Expected ordered, distinct bounds");
