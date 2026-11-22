@@ -1,9 +1,13 @@
 package com.liftcode.liftcode_server.domain.routine;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.List;
+import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
@@ -11,7 +15,14 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @Table(name = "workout_sets", uniqueConstraints = @UniqueConstraint(columnNames = {"workout_exercise_id", "sort_key"}))
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkoutSet extends OrderedRoutineItem {
+
+    public WorkoutSet(UUID id, @NonNull WorkoutExercise workoutExercise, @NonNull String setType, String sortKey) {
+        super(id, sortKey);
+        this.workoutExercise = workoutExercise;
+        this.setType = setType;
+    }
 
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "workout_exercise_id")

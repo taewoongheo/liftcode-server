@@ -2,9 +2,13 @@ package com.liftcode.liftcode_server.domain.log;
 
 import com.liftcode.liftcode_server.domain.VersionedEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import java.util.List;
+import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.*;
 import static jakarta.persistence.FetchType.LAZY;
@@ -12,7 +16,21 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @Table(name = "set_logs")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SetLog extends VersionedEntity {
+
+    public SetLog(
+            UUID id,
+            @NonNull ExerciseLog exerciseLog,
+            int position,
+            @NonNull String setType,
+            @NonNull String actualWeightUnit) {
+        super(id);
+        this.exerciseLog = exerciseLog;
+        this.position = position;
+        this.setType = setType;
+        this.actualWeightUnit = actualWeightUnit;
+    }
 
     @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "exercise_log_id", nullable = false)

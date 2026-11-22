@@ -4,18 +4,25 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
 
 @Getter
 @MappedSuperclass
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class VersionedEntity {
+
+    protected VersionedEntity(UUID id) {
+        assignId(id);
+    }
 
     @Id
     private UUID id;
@@ -35,10 +42,10 @@ public abstract class VersionedEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public void assignId(UUID id) {
+    public void assignId(@NonNull UUID id) {
         if (this.id != null) {
             throw new IllegalStateException("Entity ID has already been assigned");
         }
-        this.id = Objects.requireNonNull(id, "id");
+        this.id = id;
     }
 }
