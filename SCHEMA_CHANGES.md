@@ -17,3 +17,22 @@ Store a standalone workout directly in `workouts`. When migrating client program
 - Migrate workout completion details and rest completions into `training_logs` with type `WORKOUT` or `REST`. Repoint exercise logs to `training_log_id`. Preserve the program ID, item ID, program name, and item position at completion. Standalone workouts have no program context.
 - Capture and sync both `started_at` and `completed_at` for rest entries. Existing client rest records contain only `completed_at`; handling missing historical start times remains a migration decision.
 - Update scheduling and sync to read completion history from the logs.
+
+## Default gym
+
+The server stores the default gym in `users.default_gym_id` and has removed `gym_settings`. Migrate each user's existing selection and sync future selection changes with the user version.
+
+- Deleting the selected gym clears `users.default_gym_id` (`ON DELETE SET NULL`).
+- Deleting a user deletes all gyms they own through `gyms.user_id` (`ON DELETE CASCADE`).
+
+## Equipment weight methods
+
+Migrate the client values `range` and `bar_and_plates` to `RANGE` and `BAR_AND_PLATES` in local storage and sync payloads.
+
+## Equipment weight range positions
+
+Keep each range's stored integer `position` when loading, editing, and syncing it. Display ranges in ascending position order. The client currently rewrites the full list using array indices. Update it to insert, edit, or delete only the affected rows. Preserve gaps after deletion and append new ranges at `max(position) + 1` for the same gym and equipment, starting at 0 for an empty list.
+
+## Equipment bar weight
+
+Each gym and equipment pair has at most one bar weight. Store it in the nullable `gym_equipment_weight_settings.bar_weight` column alongside `bar_unit`. When migrating, copy the existing value by `(gym_id, equipment_id)` before dropping `gym_equipment_bar_settings`. A missing row maps to null. Switching weight methods preserves the saved bar weight.
