@@ -15,7 +15,7 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.*;
 
 @Entity
-@Table(name = "exercise_logs", uniqueConstraints = @UniqueConstraint(columnNames = {"workout_log_id", "sort_key"}))
+@Table(name = "exercise_logs", uniqueConstraints = @UniqueConstraint(columnNames = {"training_log_id", "sort_key"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExerciseLog extends OrderedItem {
@@ -35,7 +35,7 @@ public class ExerciseLog extends OrderedItem {
     }
 
     @ManyToOne(fetch = LAZY, optional = false)
-    @JoinColumn(name = "workout_log_id", nullable = false)
+    @JoinColumn(name = "training_log_id", nullable = false)
     private WorkoutLog workoutLog;
 
     @OneToMany(mappedBy = "exerciseLog", cascade = ALL)

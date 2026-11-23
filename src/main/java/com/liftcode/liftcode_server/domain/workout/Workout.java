@@ -1,13 +1,15 @@
-package com.liftcode.liftcode_server.domain.routine;
+package com.liftcode.liftcode_server.domain.workout;
 
 import com.liftcode.liftcode_server.domain.User;
 import com.liftcode.liftcode_server.domain.VersionedEntity;
+import com.liftcode.liftcode_server.domain.program.ProgramItem;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,7 +34,7 @@ public class Workout extends VersionedEntity {
 
     @OneToMany(mappedBy = "workout", cascade = ALL)
     @OrderBy("sortKey ASC")
-    private List<WorkoutExercise> workoutExercises;
+    private List<WorkoutExercise> workoutExercises = new ArrayList<>();
 
     @Column(nullable = false)
     private String name;

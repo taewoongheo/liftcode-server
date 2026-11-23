@@ -1,7 +1,6 @@
 package com.liftcode.liftcode_server.domain.log;
 
 import com.liftcode.liftcode_server.domain.User;
-import com.liftcode.liftcode_server.domain.VersionedEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,57 +13,35 @@ import java.util.List;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
-import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "workout_logs")
+@DiscriminatorValue("WORKOUT")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WorkoutLog extends VersionedEntity {
+public class WorkoutLog extends TrainingLog {
 
-    public WorkoutLog(
-            UUID id,
-            @NonNull User user,
-            @NonNull String workoutNameSnapshot,
-            @NonNull Instant startedAt,
-            @NonNull Instant completedAt,
-            int durationSeconds,
-            @NonNull String notes) {
-        super(id);
-        this.user = user;
+    public WorkoutLog(UUID id, User user, Instant startedAt, Instant completedAt, @NonNull UUID sourceWorkoutId,
+                      @NonNull String workoutNameSnapshot, int durationSeconds, @NonNull String notes) {
+        super(id, user, startedAt, completedAt);
+        this.sourceWorkoutId = sourceWorkoutId;
         this.workoutNameSnapshot = workoutNameSnapshot;
-        this.startedAt = startedAt;
-        this.completedAt = completedAt;
         this.durationSeconds = durationSeconds;
         this.notes = notes;
     }
 
-    /*
-    * workoutId 값을 저장
-    * 원본 workout 이 삭제되어도 다른 log 들과 같은 workout 임을 식별하기 위함
-    */
-    private UUID sourceWorkoutId;
-
-    @ManyToOne(fetch = LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    public WorkoutLog(UUID id, User user, Instant startedAt, Instant completedAt,
+                      UUID sourceWorkoutId, String workoutNameSnapshot, int durationSeconds, String notes,
+                      UUID programId, UUID programItemId, String programNameSnapshot, int itemPositionSnapshot) {
+        this(id, user, startedAt, completedAt, sourceWorkoutId, workoutNameSnapshot, durationSeconds, notes);
+        setProgramSnapshot(programId, programItemId, programNameSnapshot, itemPositionSnapshot);
+    }
 
     @OneToMany(mappedBy = "workoutLog", cascade = ALL)
     @OrderBy("sortKey ASC")
     private List<ExerciseLog> exerciseLogs = new ArrayList<>();
 
-    @Column(nullable = false)
+    private UUID sourceWorkoutId;
     private String workoutNameSnapshot;
-
-    @Column(nullable = false)
-    private int durationSeconds;
-
-    @Column(nullable = false)
+    private Integer durationSeconds;
     private String notes;
-
-    @Column(nullable = false)
-    private Instant startedAt;
-
-    @Column(nullable = false)
-    private Instant completedAt;
 }

@@ -1,4 +1,4 @@
-package com.liftcode.liftcode_server.domain.routine;
+package com.liftcode.liftcode_server.domain.workout;
 
 import com.liftcode.liftcode_server.domain.OrderedItem;
 import jakarta.persistence.*;

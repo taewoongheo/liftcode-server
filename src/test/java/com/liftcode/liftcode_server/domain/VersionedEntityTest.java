@@ -1,11 +1,15 @@
 package com.liftcode.liftcode_server.domain;
 
 import com.liftcode.liftcode_server.domain.log.ExerciseLog;
+import com.liftcode.liftcode_server.domain.program.Program;
+import com.liftcode.liftcode_server.domain.program.ProgramItem;
 import com.liftcode.liftcode_server.domain.log.SetLog;
+import com.liftcode.liftcode_server.domain.log.TrainingLog;
 import com.liftcode.liftcode_server.domain.log.WorkoutLog;
-import com.liftcode.liftcode_server.domain.routine.Workout;
-import com.liftcode.liftcode_server.domain.routine.WorkoutExercise;
-import com.liftcode.liftcode_server.domain.routine.WorkoutSet;
+import com.liftcode.liftcode_server.domain.log.RestLog;
+import com.liftcode.liftcode_server.domain.workout.Workout;
+import com.liftcode.liftcode_server.domain.workout.WorkoutExercise;
+import com.liftcode.liftcode_server.domain.workout.WorkoutSet;
 import com.liftcode.liftcode_server.utils.FractionalIndex;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -31,7 +35,13 @@ class VersionedEntityTest {
         em.persist(user);
 
         UUID workoutLogId = UUID.randomUUID();
-        var workout = new WorkoutLog(workoutLogId, user, "Workout", Instant.EPOCH, Instant.EPOCH, 0, "");
+        UUID sourceWorkoutId = UUID.randomUUID();
+        UUID programId = UUID.randomUUID();
+        UUID programItemId = UUID.randomUUID();
+        Instant startedAt = Instant.parse("2026-01-10T09:00:00Z");
+        Instant completedAt = startedAt.plusSeconds(600);
+        var workout = new WorkoutLog(workoutLogId, user, startedAt, completedAt, sourceWorkoutId,
+                "Workout", 600, "", programId, programItemId, "Strength", 3);
         em.persist(workout);
 
         var exercise = new ExerciseLog(UUID.randomUUID(), workout, "squat", "a1", "reps", false);
@@ -46,8 +56,15 @@ class VersionedEntityTest {
         em.flush();
         em.clear();
 
-        assertEquals(workoutLogId, workout.getId());
-        var savedWorkout = em.find(WorkoutLog.class, workoutLogId);
+        var savedWorkout = assertInstanceOf(WorkoutLog.class, em.find(TrainingLog.class, workoutLogId));
+        assertEquals(sourceWorkoutId, savedWorkout.getSourceWorkoutId());
+        assertEquals(programId, savedWorkout.getProgramId());
+        assertEquals(programItemId, savedWorkout.getProgramItemId());
+        assertEquals("Strength", savedWorkout.getProgramNameSnapshot());
+        assertEquals(3, savedWorkout.getItemPositionSnapshot());
+        assertEquals(startedAt, savedWorkout.getStartedAt());
+        assertEquals(completedAt, savedWorkout.getCompletedAt());
+        assertEquals(user.getId(), savedWorkout.getUser().getId());
         assertEquals(List.of(earlierExercise.getId(), exercise.getId()),
                 savedWorkout.getExerciseLogs().stream().map(ExerciseLog::getId).toList());
         assertEquals(List.of(earlierSet.getId(), set.getId()),
@@ -61,6 +78,56 @@ class VersionedEntityTest {
         setField(savedWorkout, "notes", "Done");
         em.flush();
         assertEquals(1, savedWorkout.getVersion());
+    }
+
+    @Test
+    void savesStandaloneWorkoutWithoutProgramSnapshot() {
+        var user = new User(UUID.randomUUID());
+        Instant start = Instant.parse("2026-01-10T09:00:00Z");
+        UUID sourceId = UUID.randomUUID();
+        var workout = new WorkoutLog(UUID.randomUUID(), user, start, start.plusSeconds(60),
+                sourceId, "Workout", 60, "");
+        em.persist(user);
+        em.persist(workout);
+        em.flush();
+        em.clear();
+
+        var saved = assertInstanceOf(WorkoutLog.class, em.find(TrainingLog.class, workout.getId()));
+        assertNull(saved.getProgramId());
+        assertNull(saved.getProgramItemId());
+        assertNull(saved.getProgramNameSnapshot());
+        assertNull(saved.getItemPositionSnapshot());
+        assertEquals(sourceId, saved.getSourceWorkoutId());
+        assertEquals(start, saved.getStartedAt());
+        assertEquals(start.plusSeconds(60), saved.getCompletedAt());
+    }
+
+    @Test
+    void savesProgramRestWithoutSourceWorkout() {
+        var user = new User(UUID.randomUUID());
+        UUID programId = UUID.randomUUID();
+        UUID itemId = UUID.randomUUID();
+        Instant start = Instant.parse("2026-01-11T00:00:00Z");
+        Instant end = start.plusSeconds(3600);
+        var program = new Program(programId, user, "Strength");
+        var restDay = new ProgramItem(itemId, program, "a0", null);
+        var rest = new RestLog(UUID.randomUUID(), user, start, end, programId, itemId, "Strength", 4);
+        em.persist(user);
+        em.persist(program);
+        em.persist(restDay);
+        em.persist(rest);
+        em.flush();
+        em.clear();
+
+        assertNull(em.find(ProgramItem.class, itemId).getWorkout());
+        var saved = assertInstanceOf(RestLog.class, em.find(TrainingLog.class, rest.getId()));
+        assertEquals(user.getId(), saved.getUser().getId());
+        assertEquals(programId, saved.getProgramId());
+        assertEquals(itemId, saved.getProgramItemId());
+        assertEquals("Strength", saved.getProgramNameSnapshot());
+        assertEquals(4, saved.getItemPositionSnapshot());
+        assertEquals(start, saved.getStartedAt());
+        assertEquals(end, saved.getCompletedAt());
     }
 
     @Test
