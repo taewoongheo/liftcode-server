@@ -2,7 +2,6 @@ package com.liftcode.liftcode_server.domain.workout;
 
 import com.liftcode.liftcode_server.domain.User;
 import com.liftcode.liftcode_server.domain.VersionedEntity;
-import com.liftcode.liftcode_server.domain.program.ProgramItem;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -36,6 +35,6 @@ public class Workout extends VersionedEntity {
     @OrderBy("sortKey ASC")
     private List<WorkoutExercise> workoutExercises = new ArrayList<>();
 
-    @Column(nullable = false)
+    @Column(nullable = false, check = @CheckConstraint(constraint = "length(trim(name)) between 1 and 40"))
     private String name;
 }

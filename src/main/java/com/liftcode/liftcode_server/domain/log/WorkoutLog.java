@@ -43,5 +43,7 @@ public class WorkoutLog extends TrainingLog {
     private UUID sourceWorkoutId;
     private String workoutNameSnapshot;
     private Integer durationSeconds;
+
+    @Column(length = 500)
     private String notes;
 }

@@ -24,9 +24,10 @@ public class Program extends VersionedEntity {
         this.name = name;
     }
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(nullable = false, check = @CheckConstraint(constraint = "length(trim(name)) between 1 and 50"))
     private String name;
 }

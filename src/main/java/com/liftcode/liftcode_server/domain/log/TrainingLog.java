@@ -16,7 +16,16 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type")
-@Table(name = "training_logs")
+@Table(name = "training_logs", check = {
+        @CheckConstraint(name = "training_logs_time_order", constraint = "completed_at >= started_at"),
+        @CheckConstraint(name = "training_logs_workout_details", constraint = """
+                type <> 'WORKOUT' or (
+                    workout_name_snapshot is not null and length(trim(workout_name_snapshot)) between 1 and 40
+                    and duration_seconds is not null and duration_seconds >= 0
+                    and notes is not null
+                )
+                """)
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class TrainingLog extends VersionedEntity {

@@ -15,7 +15,12 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "workout_sets", uniqueConstraints = @UniqueConstraint(columnNames = {"workout_exercise_id", "sort_key"}))
+@Table(name = "workout_sets",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"workout_exercise_id", "sort_key"}),
+        check = {
+                @CheckConstraint(name = "workout_sets_reps_order", constraint = "target_reps_min <= target_reps_max"),
+                @CheckConstraint(name = "workout_sets_not_own_parent", constraint = "parent_workout_set_id <> id")
+        })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkoutSet extends OrderedItem {
@@ -42,8 +47,10 @@ public class WorkoutSet extends OrderedItem {
     @Column(nullable = false)
     private String setType;
 
+    @Column(check = @CheckConstraint(constraint = "target_reps_min between 0 and 9999"))
     private Integer targetRepsMin;
 
+    @Column(check = @CheckConstraint(constraint = "target_reps_max between 0 and 9999"))
     private Integer targetRepsMax;
 
     private Integer targetDurationSeconds;

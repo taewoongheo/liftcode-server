@@ -15,7 +15,9 @@ import static jakarta.persistence.CascadeType.*;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "set_logs", uniqueConstraints = @UniqueConstraint(columnNames = {"exercise_log_id", "sort_key"}))
+@Table(name = "set_logs",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"exercise_log_id", "sort_key"}),
+        check = @CheckConstraint(name = "set_logs_not_own_parent", constraint = "parent_set_log_id <> id"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SetLog extends OrderedItem {
@@ -47,20 +49,22 @@ public class SetLog extends OrderedItem {
     @Column(nullable = false)
     private String setType;
 
-    private double actualWeight;
+    private Double actualWeight;
 
+    @Column(check = @CheckConstraint(constraint = "actual_reps between 1 and 9999"))
     private Integer actualReps;
 
     /*
     * Double -> Integer 타입으로 변경
     * TODO: 클라이언트 db 변경 필요
     */
+    @Column(check = @CheckConstraint(constraint = "actual_rir between 0 and 5"))
     private Integer actualRir;
 
     private Integer actualDurationSeconds;
 
-    private double actualDistance;
+    private Double actualDistance;
 
-    @Column(nullable = false)
+    @Column(nullable = false, check = @CheckConstraint(constraint = "actual_weight_unit in ('kg', 'lb')"))
     private String actualWeightUnit;
 }
