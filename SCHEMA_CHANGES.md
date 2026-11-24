@@ -11,9 +11,9 @@ Server schema changes to account for when updating the LiftCode client.
 
 Store a standalone workout directly in `workouts`. When migrating client programs with `training_mode = 'workout'`, keep the workout ID and update references to the wrapper program. Create and sync standalone workouts without a program row or a `training_mode` field.
 
-## Program progress and completions (planned)
+## Program progress and completions
 
-- Keep program-level start and restart timestamps on `programs`. Omit `program_runs` from the new server schema and derive the next item from the latest completion since the last restart and the current program order. Start at the first item when there is no completion and wrap after the last item.
+- Store the current progress boundary in nullable `programs.progress_started_at` (`timestamptz`). Null means the program has not started. Set it on the first start and replace it on each restart; preserve previous training logs. Omit `program_runs` from the new server schema. When implementing scheduling, derive the next item from completions belonging to the current progress period and the current program order. Start at the first item when there is no completion and wrap after the last item. Scheduling and client migration remain to be implemented.
 - Migrate workout completion details and rest completions into `training_logs` with type `WORKOUT` or `REST`. Repoint exercise logs to `training_log_id`. Preserve the program ID, item ID, program name, and item position at completion. Standalone workouts have no program context.
 - Capture and sync both `started_at` and `completed_at` for rest entries. Existing client rest records contain only `completed_at`; handling missing historical start times remains a migration decision.
 - Update scheduling and sync to read completion history from the logs.
@@ -37,6 +37,7 @@ Server enum columns store the uppercase Java constant name. Update client storag
 | Equipment weight method | `RANGE`, `BAR_AND_PLATES` |
 | Workout and logged set type | `WORKING`, `WARMUP`, `DROP`, `MYO`, `FAILURE` |
 | Exercise log tracking type | `REPS`, `WEIGHT_REPS`, `TIME`, `TIME_DISTANCE` |
+| Rest timer category | `COMPOUND_UPPER`, `COMPOUND_LOWER`, `ISOLATION_UPPER`, `ISOLATION_LOWER`, `CORE`, `BODYWEIGHT` |
 
 ## Equipment weight setting versions
 
@@ -62,3 +63,10 @@ Reset a customization by deleting its scheme. Resolve an exercise override first
 - Use the existing deterministic exercise-note sync UUID as the primary key of `exercise_notes`. The pair `(user_id, exercise_key)` stays unique. Clearing a note keeps its ID and stores null.
 - Keep the user's local `measured_on` date when syncing a body measurement. The server manages its audit timestamps separately from the time of measurement.
 - Send the user's selected distance unit explicitly. The server defaults to `KM` and a fresh client database defaults to `mi`.
+
+## Workout and statistics settings
+
+- Identify rest timer overrides by `(user_id, category)` or `(user_id, exercise_id)`. The server has no additional sync UUID for these rows.
+- Map client `exercise_key` to server `exercise_id` and `duration_seconds` to `duration`. Duration remains an integer number of seconds. Null clears an override and zero explicitly disables the wait.
+- Preserve SQL null for unconfigured statistics favorites and a JSON empty array for an explicitly empty selection.
+- Store the home selection in `users.program_id` or `users.workout_id`. A table check prevents both from being populated; both may be null before a selection. Update client storage and sync to use these references instead of `program_state.active_program_run_id`.

@@ -12,6 +12,8 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 @Entity
 @Table(name = "user_body_profiles", check = @CheckConstraint(name = "body_profile_complete",
         constraint = "num_nonnulls(sex, birth_year, height_cm, weight_kg) in (0, 4)"))
@@ -23,7 +25,7 @@ public class UserBodyProfile extends VersionedEntity {
     private UUID id;
 
     @MapsId
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;

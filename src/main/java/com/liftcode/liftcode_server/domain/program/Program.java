@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -33,4 +34,12 @@ public class Program extends VersionedEntity {
 
     @Column(nullable = false, check = @CheckConstraint(constraint = "length(trim(name)) between 1 and 50"))
     private String name;
+
+    @Column(name = "progress_started_at")
+    private Instant progressStartedAt;
+
+    public void startProgress(@NonNull Instant startedAt) {
+        this.progressStartedAt = startedAt;
+    }
+
 }
