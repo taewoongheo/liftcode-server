@@ -25,9 +25,18 @@ The server stores the default gym in `users.default_gym_id` and has removed `gym
 - Deleting the selected gym clears `users.default_gym_id` (`ON DELETE SET NULL`).
 - Deleting a user deletes all gyms they own through `gyms.user_id` (`ON DELETE CASCADE`).
 
-## Equipment weight methods
+## Enum values
 
-Migrate the client values `range` and `bar_and_plates` to `RANGE` and `BAR_AND_PLATES` in local storage and sync payloads.
+Server enum columns store the uppercase Java constant name. Update client storage and sync payloads to use these values.
+
+| Field | Server values |
+| --- | --- |
+| Body profile sex | `FEMALE`, `MALE` |
+| Distance unit | `KM`, `MI` |
+| Equipment and set log weight units | `KG`, `LB` |
+| Equipment weight method | `RANGE`, `BAR_AND_PLATES` |
+| Workout and logged set type | `WORKING`, `WARMUP`, `DROP`, `MYO`, `FAILURE` |
+| Exercise log tracking type | `REPS`, `WEIGHT_REPS`, `TIME`, `TIME_DISTANCE` |
 
 ## Equipment weight range positions
 
@@ -43,3 +52,9 @@ Each gym and equipment pair has at most one bar weight. Store it in the nullable
 - Merge `warmup_default_steps` and `exercise_warmup_steps` into `warmup_steps`. Preserve each step's position, weight percentage, and optional rep count under its `scheme_id`. Saving edits replaces the scheme's ordered list.
 
 Reset a customization by deleting its scheme. Resolve an exercise override first, then the user's default, then the built-in 40% × 8, 60% × 5, and 80% × 3.
+
+## Goals, body measurements and exercise notes
+
+- Use the existing deterministic exercise-note sync UUID as the primary key of `exercise_notes`. The pair `(user_id, exercise_key)` stays unique. Clearing a note keeps its ID and stores null.
+- Keep the user's local `measured_on` date when syncing a body measurement. The server manages its audit timestamps separately from the time of measurement.
+- Send the user's selected distance unit explicitly. The server defaults to `KM` and a fresh client database defaults to `mi`.

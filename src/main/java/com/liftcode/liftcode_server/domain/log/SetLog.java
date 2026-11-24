@@ -1,6 +1,8 @@
 package com.liftcode.liftcode_server.domain.log;
 
 import com.liftcode.liftcode_server.domain.OrderedItem;
+import com.liftcode.liftcode_server.domain.WeightUnit;
+import com.liftcode.liftcode_server.domain.workout.SetType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -26,8 +28,8 @@ public class SetLog extends OrderedItem {
             UUID id,
             @NonNull ExerciseLog exerciseLog,
             String sortKey,
-            @NonNull String setType,
-            @NonNull String actualWeightUnit) {
+            @NonNull SetType setType,
+            @NonNull WeightUnit actualWeightUnit) {
         super(id, sortKey);
         this.exerciseLog = exerciseLog;
         this.setType = setType;
@@ -46,8 +48,9 @@ public class SetLog extends OrderedItem {
     @OrderBy("sortKey ASC")
     private List<SetLog> setLogs = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String setType;
+    private SetType setType;
 
     private Double actualWeight;
 
@@ -65,6 +68,7 @@ public class SetLog extends OrderedItem {
 
     private Double actualDistance;
 
-    @Column(nullable = false, check = @CheckConstraint(constraint = "actual_weight_unit in ('kg', 'lb')"))
-    private String actualWeightUnit;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private WeightUnit actualWeightUnit;
 }

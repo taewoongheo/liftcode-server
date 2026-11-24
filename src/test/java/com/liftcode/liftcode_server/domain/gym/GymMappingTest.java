@@ -1,6 +1,7 @@
 package com.liftcode.liftcode_server.domain.gym;
 
 import com.liftcode.liftcode_server.domain.User;
+import com.liftcode.liftcode_server.domain.WeightUnit;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +41,8 @@ class GymMappingTest {
         assertEquals(WeightMethod.BAR_AND_PLATES, savedWeights.getActiveWeightMethod());
         assertEquals(45, savedWeights.getBarWeight());
         assertEquals(range, savedWeights.getRanges().get(0));
-        assertEquals("lb", savedWeights.getRangeUnit());
-        assertEquals("lb", savedWeights.getBarUnit());
+        assertEquals(WeightUnit.LB, savedWeights.getRangeUnit());
+        assertEquals(WeightUnit.LB, savedWeights.getBarUnit());
         assertTrue(savedWeights.getPlateDenominations().contains(1.25));
 
         savedWeights.changeWeightMethod(WeightMethod.RANGE);

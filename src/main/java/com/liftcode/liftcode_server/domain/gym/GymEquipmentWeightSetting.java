@@ -1,5 +1,6 @@
 package com.liftcode.liftcode_server.domain.gym;
 
+import com.liftcode.liftcode_server.domain.WeightUnit;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -14,7 +15,7 @@ import java.util.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GymEquipmentWeightSetting {
 
-    private static final String DEFAULT_UNIT = "lb";
+    private static final WeightUnit DEFAULT_UNIT = WeightUnit.LB;
 
     public GymEquipmentWeightSetting(@NonNull Gym gym, @NonNull String equipmentId, @NonNull WeightMethod activeWeightMethod) {
         this.gym = gym;
@@ -35,13 +36,15 @@ public class GymEquipmentWeightSetting {
     @Column(nullable = false)
     private WeightMethod activeWeightMethod;
 
-    @ColumnDefault("'" + DEFAULT_UNIT + "'")
-    @Column(nullable = false, check = @CheckConstraint(constraint = "range_unit in ('kg','lb')"))
-    private String rangeUnit = DEFAULT_UNIT;
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault("'LB'")
+    @Column(nullable = false)
+    private WeightUnit rangeUnit = DEFAULT_UNIT;
 
-    @ColumnDefault("'" + DEFAULT_UNIT + "'")
-    @Column(nullable = false, check = @CheckConstraint(constraint = "bar_unit in ('kg','lb')"))
-    private String barUnit = DEFAULT_UNIT;
+    @Enumerated(EnumType.STRING)
+    @ColumnDefault("'LB'")
+    @Column(nullable = false)
+    private WeightUnit barUnit = DEFAULT_UNIT;
 
     @Column(check = @CheckConstraint(constraint = "bar_weight >= 0 and bar_weight < 'Infinity'"))
     private Double barWeight;

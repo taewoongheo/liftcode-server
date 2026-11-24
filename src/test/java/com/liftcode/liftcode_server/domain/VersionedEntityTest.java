@@ -8,6 +8,7 @@ import com.liftcode.liftcode_server.domain.log.TrainingLog;
 import com.liftcode.liftcode_server.domain.log.WorkoutLog;
 import com.liftcode.liftcode_server.domain.log.RestLog;
 import com.liftcode.liftcode_server.domain.workout.Workout;
+import com.liftcode.liftcode_server.domain.workout.SetType;
 import com.liftcode.liftcode_server.domain.workout.WorkoutExercise;
 import com.liftcode.liftcode_server.domain.workout.WorkoutSet;
 import com.liftcode.liftcode_server.utils.FractionalIndex;
@@ -44,13 +45,13 @@ class VersionedEntityTest {
                 "Workout", 600, "", programId, programItemId, "Strength", 3);
         em.persist(workout);
 
-        var exercise = new ExerciseLog(UUID.randomUUID(), workout, "squat", "a1", "reps", false);
+        var exercise = new ExerciseLog(UUID.randomUUID(), workout, "squat", "a1", ExerciseLog.TrackingType.REPS, false);
         em.persist(exercise);
 
-        var set = new SetLog(UUID.randomUUID(), exercise, "a1", "working", "kg");
+        var set = new SetLog(UUID.randomUUID(), exercise, "a1", SetType.WORKING, WeightUnit.KG);
         em.persist(set);
-        var earlierExercise = new ExerciseLog(UUID.randomUUID(), workout, "bench", "a0", "reps", false);
-        var earlierSet = new SetLog(UUID.randomUUID(), exercise, "a0", "warmup", "kg");
+        var earlierExercise = new ExerciseLog(UUID.randomUUID(), workout, "bench", "a0", ExerciseLog.TrackingType.REPS, false);
+        var earlierSet = new SetLog(UUID.randomUUID(), exercise, "a0", SetType.WARMUP, WeightUnit.KG);
         em.persist(earlierExercise);
         em.persist(earlierSet);
         em.flush();
@@ -136,7 +137,7 @@ class VersionedEntityTest {
         var workout = new Workout(UUID.randomUUID(), user, "Leg day");
         String initial = FractionalIndex.between(null, null);
         var exercise = new WorkoutExercise(UUID.randomUUID(), workout, "squat", initial, false);
-        var set = new WorkoutSet(UUID.randomUUID(), exercise, "working", initial);
+        var set = new WorkoutSet(UUID.randomUUID(), exercise, SetType.WORKING, initial);
         em.persist(user);
         em.persist(workout);
         em.persist(exercise);

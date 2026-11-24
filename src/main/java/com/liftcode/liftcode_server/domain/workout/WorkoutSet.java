@@ -25,7 +25,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkoutSet extends OrderedItem {
 
-    public WorkoutSet(UUID id, @NonNull WorkoutExercise workoutExercise, @NonNull String setType, String sortKey) {
+    public WorkoutSet(UUID id, @NonNull WorkoutExercise workoutExercise, @NonNull SetType setType, String sortKey) {
         super(id, sortKey);
         this.workoutExercise = workoutExercise;
         this.setType = setType;
@@ -43,9 +43,9 @@ public class WorkoutSet extends OrderedItem {
     @OrderBy("sortKey ASC")
     private List<WorkoutSet> workoutSets = new ArrayList<>();
 
-    // TODO: setType 은 enum 으로 변경하기
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String setType;
+    private SetType setType;
 
     @Column(check = @CheckConstraint(constraint = "target_reps_min between 0 and 9999"))
     private Integer targetRepsMin;

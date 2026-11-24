@@ -25,7 +25,7 @@ public class ExerciseLog extends OrderedItem {
             @NonNull WorkoutLog workoutLog,
             @NonNull String exerciseKey,
             String sortKey,
-            @NonNull String trackingType,
+            @NonNull TrackingType trackingType,
             boolean supersetWithNext) {
         super(id, sortKey);
         this.workoutLog = workoutLog;
@@ -45,9 +45,14 @@ public class ExerciseLog extends OrderedItem {
     @Column(nullable = false)
     private String exerciseKey;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String trackingType;
+    private TrackingType trackingType;
 
     @Column(nullable = false)
     private boolean supersetWithNext;
+
+    public enum TrackingType {
+        REPS, WEIGHT_REPS, TIME, TIME_DISTANCE
+    }
 }
