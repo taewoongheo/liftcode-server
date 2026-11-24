@@ -36,3 +36,10 @@ Keep each range's stored integer `position` when loading, editing, and syncing i
 ## Equipment bar weight
 
 Each gym and equipment pair has at most one bar weight. Store it in the nullable `gym_equipment_weight_settings.bar_weight` column alongside `bar_unit`. When migrating, copy the existing value by `(gym_id, equipment_id)` before dropping `gym_equipment_bar_settings`. A missing row maps to null. Switching weight methods preserves the saved bar weight.
+
+## Warmup schemes
+
+- Merge `warmup_default_settings` and `exercise_warmup_settings` into `warmup_schemes`. A user default uses the user's ID as its primary key and has a null `exercise_key`. Exercise overrides are unique per user and exercise.
+- Merge `warmup_default_steps` and `exercise_warmup_steps` into `warmup_steps`. Preserve each step's position, weight percentage, and optional rep count under its `scheme_id`. Saving edits replaces the scheme's ordered list.
+
+Reset a customization by deleting its scheme. Resolve an exercise override first, then the user's default, then the built-in 40% × 8, 60% × 5, and 80% × 3.
