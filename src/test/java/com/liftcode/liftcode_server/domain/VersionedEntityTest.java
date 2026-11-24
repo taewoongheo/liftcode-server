@@ -82,6 +82,25 @@ class VersionedEntityTest {
     }
 
     @Test
+    void databaseRejectsWorkoutHistoryWithoutSourceWorkoutId() {
+        var user = new User(UUID.randomUUID());
+        em.persist(user);
+        em.flush();
+
+        var failure = assertThrows(org.hibernate.exception.ConstraintViolationException.class, () ->
+                em.createNativeQuery("""
+                        insert into training_logs
+                            (id, user_id, type, version, created_at, updated_at, started_at, completed_at,
+                             workout_name_snapshot, duration_seconds, notes, source_workout_id)
+                        values (:id, :userId, 'WORKOUT', 0, now(), now(), now(), now(), 'Workout', 0, '', null)
+                        """)
+                        .setParameter("id", UUID.randomUUID())
+                        .setParameter("userId", user.getId())
+                        .executeUpdate());
+        assertEquals("training_logs_workout_details", failure.getConstraintName());
+    }
+
+    @Test
     void savesStandaloneWorkoutWithoutProgramSnapshot() {
         var user = new User(UUID.randomUUID());
         Instant start = Instant.parse("2026-01-10T09:00:00Z");

@@ -16,7 +16,7 @@ class GymMappingTest {
     @Autowired EntityManager em;
 
     @Test
-    void persistsGymConfigurationAndClearsDefaultWhenGymIsDeleted() {
+    void persistsGymConfigurationAndVersionsDefaultClearingBeforeDeletion() {
         var user = new User(UUID.randomUUID());
         var gym = new Gym(UUID.randomUUID(), user, "Home");
         gym.getExerciseIds().add("squat");
@@ -59,9 +59,14 @@ class GymMappingTest {
         em.clear();
         assertNull(em.find(GymEquipmentWeightSetting.class, weights.getId()).getBarWeight());
 
+        var savedUser = em.find(User.class, user.getId());
+        int previousVersion = savedUser.getVersion();
+        savedUser.setDefaultGym(null);
+        em.flush();
         em.createNativeQuery("delete from gyms where id = :id").setParameter("id", gym.getId()).executeUpdate();
         em.clear();
         assertNull(em.find(User.class, user.getId()).getDefaultGym());
+        assertEquals(previousVersion + 1, em.find(User.class, user.getId()).getVersion());
         assertNull(em.find(GymEquipmentWeightSetting.class, weights.getId()));
     }
 }

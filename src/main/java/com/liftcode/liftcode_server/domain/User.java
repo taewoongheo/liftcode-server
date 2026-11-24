@@ -13,8 +13,6 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
 
@@ -35,9 +33,11 @@ public class User extends VersionedEntity {
         this.id = id;
     }
 
+    /**
+     * TODO: Clear and flush the selected gym in the deletion service to advance the user version.
+     */
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "default_gym_id", unique = true)
-    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Gym defaultGym;
 
     @OneToOne(fetch = LAZY)

@@ -22,7 +22,7 @@ Store a standalone workout directly in `workouts`. When migrating client program
 
 The server stores the default gym in `users.default_gym_id` and has removed `gym_settings`. Migrate each user's existing selection and sync future selection changes with the user version.
 
-- Deleting the selected gym clears `users.default_gym_id` (`ON DELETE SET NULL`).
+- Before deleting the selected gym, clear `User.defaultGym` and flush the user in the same transaction so its version increments. The FK no longer uses `ON DELETE SET NULL`; deleting a selected gym without first clearing the reference is rejected. Implement this orchestration in the future deletion service, and replace the existing FK action when migrating an existing database.
 - Deleting a user deletes all gyms they own through `gyms.user_id` (`ON DELETE CASCADE`).
 
 ## Enum values

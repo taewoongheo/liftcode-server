@@ -23,6 +23,7 @@ import static jakarta.persistence.FetchType.LAZY;
                     workout_name_snapshot is not null and length(trim(workout_name_snapshot)) between 1 and 40
                     and duration_seconds is not null and duration_seconds >= 0
                     and notes is not null
+                    and source_workout_id is not null
                 )
                 """)
 })
