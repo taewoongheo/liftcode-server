@@ -23,6 +23,9 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BodyMeasurement extends VersionedEntity {
 
+    @Id
+    private UUID id;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -43,9 +46,9 @@ public class BodyMeasurement extends VersionedEntity {
     @Column(check = @CheckConstraint(constraint = "skeletal_muscle_mass_kg > 0 and skeletal_muscle_mass_kg <= 1000"))
     private Double skeletalMuscleMassKg;
 
-    public BodyMeasurement(UUID id, @NonNull User user, @NonNull Instant measuredAt, @NonNull LocalDate measuredOn,
+    public BodyMeasurement(@NonNull UUID id, @NonNull User user, @NonNull Instant measuredAt, @NonNull LocalDate measuredOn,
                            Double weightKg, Double bodyFatPercentage, Double skeletalMuscleMassKg) {
-        super(id);
+        this.id = id;
         this.user = user;
         this.measuredAt = measuredAt;
         this.measuredOn = measuredOn;

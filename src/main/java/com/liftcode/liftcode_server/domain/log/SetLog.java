@@ -24,13 +24,17 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SetLog extends OrderedItem {
 
+    @Id
+    private UUID id;
+
     public SetLog(
-            UUID id,
+            @NonNull UUID id,
             @NonNull ExerciseLog exerciseLog,
             String sortKey,
             @NonNull SetType setType,
             @NonNull WeightUnit actualWeightUnit) {
-        super(id, sortKey);
+        super(sortKey);
+        this.id = id;
         this.exerciseLog = exerciseLog;
         this.setType = setType;
         this.actualWeightUnit = actualWeightUnit;

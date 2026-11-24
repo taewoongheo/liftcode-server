@@ -20,6 +20,9 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExerciseNote extends VersionedEntity {
 
+    @Id
+    private UUID id;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -32,8 +35,8 @@ public class ExerciseNote extends VersionedEntity {
     @Column(columnDefinition = "text", check = @CheckConstraint(constraint = "length(trim(note)) between 1 and 500"))
     private String note;
 
-    public ExerciseNote(UUID id, @NonNull User user, @NonNull String exerciseKey, String note) {
-        super(id);
+    public ExerciseNote(@NonNull UUID id, @NonNull User user, @NonNull String exerciseKey, String note) {
+        this.id = id;
         this.user = user;
         this.exerciseKey = exerciseKey;
         this.note = note;

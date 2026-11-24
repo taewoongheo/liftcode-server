@@ -7,15 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-import java.util.UUID;
-
 @Getter
 @MappedSuperclass
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class OrderedItem extends VersionedEntity {
 
-    protected OrderedItem(UUID id, @NonNull String sortKey) {
-        super(id);
+    protected OrderedItem(@NonNull String sortKey) {
         this.sortKey = sortKey;
     }
 

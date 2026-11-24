@@ -20,6 +20,9 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Goal extends VersionedEntity {
 
+    @Id
+    private UUID id;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -33,8 +36,8 @@ public class Goal extends VersionedEntity {
             """))
     private String goalJson;
 
-    public Goal(UUID id, @NonNull User user, @NonNull String goalJson) {
-        super(id);
+    public Goal(@NonNull UUID id, @NonNull User user, @NonNull String goalJson) {
+        this.id = id;
         this.user = user;
         this.goalJson = goalJson;
     }

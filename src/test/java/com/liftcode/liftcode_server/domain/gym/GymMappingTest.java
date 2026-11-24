@@ -38,6 +38,7 @@ class GymMappingTest {
         assertTrue(savedGym.getExerciseIds().contains("squat"));
         assertTrue(savedGym.getEquipmentIds().contains("barbell"));
         var savedWeights = em.find(GymEquipmentWeightSetting.class, weights.getId());
+        assertEquals(0, savedWeights.getVersion());
         assertEquals(WeightMethod.BAR_AND_PLATES, savedWeights.getActiveWeightMethod());
         assertEquals(45, savedWeights.getBarWeight());
         assertEquals(range, savedWeights.getRanges().get(0));
@@ -49,6 +50,7 @@ class GymMappingTest {
         em.flush();
         em.clear();
         var rangeSettings = em.find(GymEquipmentWeightSetting.class, weights.getId());
+        assertEquals(1, rangeSettings.getVersion());
         assertEquals(WeightMethod.RANGE, rangeSettings.getActiveWeightMethod());
         assertEquals(45.0, rangeSettings.getBarWeight());
 

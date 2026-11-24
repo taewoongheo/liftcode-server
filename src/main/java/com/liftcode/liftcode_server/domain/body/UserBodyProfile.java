@@ -10,12 +10,17 @@ import lombok.NonNull;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "user_body_profiles", check = @CheckConstraint(name = "body_profile_complete",
         constraint = "num_nonnulls(sex, birth_year, height_cm, weight_kg) in (0, 4)"))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserBodyProfile extends VersionedEntity {
+
+    @Id
+    private UUID id;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
@@ -36,7 +41,7 @@ public class UserBodyProfile extends VersionedEntity {
     private Double weightKg;
 
     public UserBodyProfile(@NonNull User user) {
-        super(user.getId());
+        this.id = user.getId();
         this.user = user;
     }
 

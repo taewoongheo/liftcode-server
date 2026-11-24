@@ -11,11 +11,16 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "measurement_settings")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MeasurementSetting extends VersionedEntity {
+
+    @Id
+    private UUID id;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
@@ -33,7 +38,7 @@ public class MeasurementSetting extends VersionedEntity {
     }
 
     public MeasurementSetting(@NonNull User user, @NonNull DistanceUnit distanceUnit) {
-        super(user.getId());
+        this.id = user.getId();
         this.user = user;
         this.distanceUnit = distanceUnit;
     }

@@ -30,9 +30,12 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class TrainingLog extends VersionedEntity {
 
-    protected TrainingLog(UUID id, @NonNull User user,
+    @Id
+    private UUID id;
+
+    protected TrainingLog(@NonNull UUID id, @NonNull User user,
                         @NonNull Instant startedAt, @NonNull Instant completedAt) {
-        super(id);
+        this.id = id;
         this.user = user;
         this.startedAt = startedAt;
         this.completedAt = completedAt;

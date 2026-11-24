@@ -20,14 +20,18 @@ import static jakarta.persistence.FetchType.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ExerciseLog extends OrderedItem {
 
+    @Id
+    private UUID id;
+
     public ExerciseLog(
-            UUID id,
+            @NonNull UUID id,
             @NonNull WorkoutLog workoutLog,
             @NonNull String exerciseKey,
             String sortKey,
             @NonNull TrackingType trackingType,
             boolean supersetWithNext) {
-        super(id, sortKey);
+        super(sortKey);
+        this.id = id;
         this.workoutLog = workoutLog;
         this.exerciseKey = exerciseKey;
         this.trackingType = trackingType;

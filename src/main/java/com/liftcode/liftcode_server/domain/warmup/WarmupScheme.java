@@ -19,7 +19,11 @@ import java.util.UUID;
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "exercise_key"}),
         check = @CheckConstraint(name = "warmup_default_uses_user_id", constraint = "exercise_key is not null or id = user_id"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class WarmupScheme extends VersionedEntity {
+
+    @Id
+    private UUID id;
 
     @Getter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -37,8 +41,8 @@ public class WarmupScheme extends VersionedEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<WarmupStep> steps = new ArrayList<>();
 
-    private WarmupScheme(UUID id, @NonNull User user, String exerciseKey, List<WarmupStep> steps) {
-        super(id);
+    private WarmupScheme(@NonNull UUID id, @NonNull User user, String exerciseKey, List<WarmupStep> steps) {
+        this.id = id;
         this.user = user;
         this.exerciseKey = exerciseKey;
         replaceSteps(steps);

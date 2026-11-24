@@ -21,8 +21,11 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Workout extends VersionedEntity {
 
-    public Workout(UUID id, @NonNull User user, @NonNull String name) {
-        super(id);
+    @Id
+    private UUID id;
+
+    public Workout(@NonNull UUID id, @NonNull User user, @NonNull String name) {
+        this.id = id;
         this.user = user;
         this.name = name;
     }

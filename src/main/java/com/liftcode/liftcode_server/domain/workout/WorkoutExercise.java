@@ -19,13 +19,17 @@ import static jakarta.persistence.CascadeType.ALL;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkoutExercise extends OrderedItem {
 
+    @Id
+    private UUID id;
+
     public WorkoutExercise(
-            UUID id,
+            @NonNull UUID id,
             @NonNull Workout workout,
             @NonNull String exerciseKey,
             String sortKey,
             boolean supersetWithNext) {
-        super(id, sortKey);
+        super(sortKey);
+        this.id = id;
         this.workout = workout;
         this.exerciseKey = exerciseKey;
         this.supersetWithNext = supersetWithNext;

@@ -19,8 +19,12 @@ import static jakarta.persistence.FetchType.LAZY;
 @Getter
 public class ProgramItem extends OrderedItem {
 
-    public ProgramItem(UUID id, @NonNull Program program, String sortKey, Workout workout) {
-        super(id, sortKey);
+    @Id
+    private UUID id;
+
+    public ProgramItem(@NonNull UUID id, @NonNull Program program, String sortKey, Workout workout) {
+        super(sortKey);
+        this.id = id;
         this.program = program;
         this.workout = workout;
     }

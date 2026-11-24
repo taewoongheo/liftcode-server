@@ -25,8 +25,12 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkoutSet extends OrderedItem {
 
-    public WorkoutSet(UUID id, @NonNull WorkoutExercise workoutExercise, @NonNull SetType setType, String sortKey) {
-        super(id, sortKey);
+    @Id
+    private UUID id;
+
+    public WorkoutSet(@NonNull UUID id, @NonNull WorkoutExercise workoutExercise, @NonNull SetType setType, String sortKey) {
+        super(sortKey);
+        this.id = id;
         this.workoutExercise = workoutExercise;
         this.setType = setType;
     }

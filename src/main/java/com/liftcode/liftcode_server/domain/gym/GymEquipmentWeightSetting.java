@@ -1,5 +1,6 @@
 package com.liftcode.liftcode_server.domain.gym;
 
+import com.liftcode.liftcode_server.domain.VersionedEntity;
 import com.liftcode.liftcode_server.domain.WeightUnit;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +14,7 @@ import java.util.*;
 @Table(name = "gym_equipment_weight_settings")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class GymEquipmentWeightSetting {
+public class GymEquipmentWeightSetting extends VersionedEntity {
 
     private static final WeightUnit DEFAULT_UNIT = WeightUnit.LB;
 

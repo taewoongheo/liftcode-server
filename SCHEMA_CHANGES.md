@@ -38,6 +38,10 @@ Server enum columns store the uppercase Java constant name. Update client storag
 | Workout and logged set type | `WORKING`, `WARMUP`, `DROP`, `MYO`, `FAILURE` |
 | Exercise log tracking type | `REPS`, `WEIGHT_REPS`, `TIME`, `TIME_DISTANCE` |
 
+## Equipment weight setting versions
+
+Track each equipment configuration by `(gym_id, equipment_id)` and its own version. When updating client sync, use the configuration's version for edits to its weight method, bar weight, ranges, and plates.
+
 ## Equipment weight range positions
 
 Keep each range's stored integer `position` when loading, editing, and syncing it. Display ranges in ascending position order. The client currently rewrites the full list using array indices. Update it to insert, edit, or delete only the affected rows. Preserve gaps after deletion and append new ranges at `max(position) + 1` for the same gym and equipment, starting at 0 for an empty list.
