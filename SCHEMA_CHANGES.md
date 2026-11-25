@@ -70,3 +70,13 @@ Reset a customization by deleting its scheme. Resolve an exercise override first
 - Map client `exercise_key` to server `exercise_id` and `duration_seconds` to `duration`. Duration remains an integer number of seconds. Null clears an override and zero explicitly disables the wait.
 - Preserve SQL null for unconfigured statistics favorites and a JSON empty array for an explicitly empty selection.
 - Store the home selection in `users.program_id` or `users.workout_id`. A table check prevents both from being populated; both may be null before a selection. Update client storage and sync to use these references instead of `program_state.active_program_run_id`.
+
+## Row-level sync
+
+- Sync each server row as its own resource with its own ID and version. A workout, each of its exercises, and each of its sets are separate resources, as are program items. Replace the aggregate workout payload (`exerciseList`, `setLists`) and the program `removedItemIds` field with one change per row.
+- A push change carries the resource type, resource ID, change kind, base version, and values. An update sends only the changed fields. A delete sends no values. Resource types and change kinds use uppercase constant names, such as `WORKOUT_SET` and `UPDATE`.
+- The server records each applied operation in `sync_change_log`. Its server-assigned `sequence` is the pull cursor. Retrying an operation with the same `operationId` applies it once.
+- Pull returns operations in sequence order and no longer returns `resources`. Each change carries the resource type, resource ID, change kind, resulting version, and the values the server applied. Apply the changes in order.
+- When a resource has unsent local changes, treat the keys of each pulled change's values as the fields the server changed. Remove the `logicalFields` expansion of nested payloads.
+- Record row deletions in `sync_tombstones` by user, resource type, and resource ID.
+- The following remain to be decided: the resource ID format for rows with composite keys, such as rest timer overrides; whether deleting a parent records a tombstone for each child; and how to handle a change that references a deleted parent or a duplicate sort key.
