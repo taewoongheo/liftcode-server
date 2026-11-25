@@ -1,6 +1,7 @@
 package com.liftcode.liftcode_server.domain.sync;
 
 import com.liftcode.liftcode_server.domain.User;
+import com.liftcode.liftcode_server.domain.sync.change.SyncChange;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,10 +9,13 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static jakarta.persistence.FetchType.LAZY;
@@ -47,18 +51,20 @@ public class SyncChangeLog {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    private String changes;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(nullable = false)
+    private List<SyncChange> changes;
 
     public SyncChangeLog(
             @NonNull User user,
             @NonNull UUID operationId,
             @NonNull UUID deviceId,
             @NonNull Instant occurredAt,
-            String changes) {
+            @NonNull List<SyncChange> changes) {
         this.user = user;
         this.operationId = operationId;
         this.deviceId = deviceId;
         this.occurredAt = occurredAt;
-//        this.changes = changes;
+        this.changes = List.copyOf(changes);
     }
 }
