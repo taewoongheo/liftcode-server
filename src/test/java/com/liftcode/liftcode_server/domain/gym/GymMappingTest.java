@@ -21,7 +21,7 @@ class GymMappingTest {
         var gym = new Gym(UUID.randomUUID(), user, "Home");
         gym.getExerciseIds().add("squat");
         gym.getEquipmentIds().add("barbell");
-        var weights = new GymEquipmentWeightSetting(gym, "barbell", WeightMethod.BAR_AND_PLATES);
+        var weights = new GymEquipmentWeightSetting(UUID.randomUUID(), gym, "barbell", WeightMethod.BAR_AND_PLATES);
         var range = new WeightRange(10, 50, 2.5);
         weights.getRanges().put(0, range);
         weights.getPlateDenominations().add(1.25);

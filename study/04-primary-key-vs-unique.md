@@ -31,7 +31,7 @@ When unsure, choose a single-column key with unique constraints. Changing a uniq
 |---|---|---|---|
 | `sync_change_log` | `sequence` | `(user_id, operation_id)` | Each row is an independent record ordered by sequence. Retry protection is a rule, not identity. |
 | `workout_exercises` | `id` | `(workout_id, sort_key)` | Reordering changes `sort_key`, and sets reference the row. |
-| `rest_timer_category_overrides` | `(user_id, category)` | None | A user has exactly one override per category. |
+| `rest_timer_category_overrides` | `id` (deterministic UUID) | `(user_id, category)` | A user has exactly one override per category. The ID is derived from that pair so it works as a single-column sync resource ID. |
 | `sync_device_states` | `(user_id, device_id)` | None | The row is the state of one device. |
 | `sync_tombstones` | `(user_id, resource_type, resource_id)` | None | The row records that one resource was deleted. The key matches the sync protocol's `(resourceType, resourceId)` pair. |
 
@@ -46,7 +46,7 @@ Two offline devices can each edit the same category override.
 - With random UUIDs, the devices create two different resources. The second push violates `(user_id, category)` and needs custom conflict handling.
 - With the combination as identity, both devices address the same resource. The second push becomes a normal version conflict.
 
-The client follows the same rule. `keyedSettingsId` in the LiftCode app hashes `userId:resourceType:key` into a stable UUID so every device produces the same ID. The server must map that hash back to the user and category when it handles a push.
+The client follows the same rule. `keyedSettingsId` in the LiftCode app hashes `userId:resourceType:key` into a stable UUID so every device produces the same ID. The server stores this UUID as the primary key and keeps `(user_id, category)` unique. Every synced row then has a single UUID resource ID, and the unique constraint still rejects a second ID for the same pair.
 
 ### Tombstones for resources with stable IDs
 

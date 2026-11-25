@@ -11,27 +11,36 @@ import org.hibernate.annotations.OnDeleteAction;
 import java.util.*;
 
 @Entity
-@Table(name = "gym_equipment_weight_settings")
+@Table(name = "gym_equipment_weight_settings", uniqueConstraints = @UniqueConstraint(
+        columnNames = {"gym_id", "equipment_id"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GymEquipmentWeightSetting extends VersionedEntity {
 
     private static final WeightUnit DEFAULT_UNIT = WeightUnit.LB;
 
-    public GymEquipmentWeightSetting(@NonNull Gym gym, @NonNull String equipmentId, @NonNull WeightMethod activeWeightMethod) {
+    public GymEquipmentWeightSetting(
+            @NonNull UUID id,
+            @NonNull Gym gym,
+            @NonNull String equipmentId,
+            @NonNull WeightMethod activeWeightMethod) {
+        this.id = id;
         this.gym = gym;
-        this.id = new GymEquipmentWeightSettingId(gym.getId(), equipmentId);
+        this.equipmentId = equipmentId;
         this.activeWeightMethod = activeWeightMethod;
     }
 
-    @EmbeddedId
-    private GymEquipmentWeightSettingId id;
+    @Id
+    private UUID id;
 
-    @MapsId("gymId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "gym_id")
+    @JoinColumn(name = "gym_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Gym gym;
+
+    @Column(name = "equipment_id", nullable = false,
+            check = @CheckConstraint(constraint = "length(trim(equipment_id)) > 0"))
+    private String equipmentId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -59,17 +68,13 @@ public class GymEquipmentWeightSetting extends VersionedEntity {
     }
 
     @ElementCollection
-    @CollectionTable(name = "gym_equipment_weight_ranges", joinColumns = {
-            @JoinColumn(name = "gym_id", referencedColumnName = "gym_id"),
-            @JoinColumn(name = "equipment_id", referencedColumnName = "equipment_id")})
+    @CollectionTable(name = "gym_equipment_weight_ranges", joinColumns = @JoinColumn(name = "gym_equipment_weight_setting_id"))
     @MapKeyColumn(name = "position", columnDefinition = "integer check (position >= 0)")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Map<Integer, WeightRange> ranges = new TreeMap<>();
 
     @ElementCollection
-    @CollectionTable(name = "gym_plate_denominations", joinColumns = {
-            @JoinColumn(name = "gym_id", referencedColumnName = "gym_id"),
-            @JoinColumn(name = "equipment_id", referencedColumnName = "equipment_id")})
+    @CollectionTable(name = "gym_plate_denominations", joinColumns = @JoinColumn(name = "gym_equipment_weight_setting_id"))
     @Column(name = "weight", nullable = false,
             check = @CheckConstraint(constraint = "weight > 0 and weight < 'Infinity'"))
     @OnDelete(action = OnDeleteAction.CASCADE)

@@ -10,32 +10,40 @@ import lombok.NonNull;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.UUID;
+
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(name = "rest_timer_category_overrides")
+@Table(name = "rest_timer_category_overrides", uniqueConstraints = @UniqueConstraint(
+        columnNames = {"user_id", "category"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RestTimerCategoryOverride extends VersionedEntity {
 
-    @EmbeddedId
-    private RestTimerCategoryOverrideId id;
-
-    @MapsId("userId")
-    @ManyToOne(fetch = LAZY, optional = false)
-    @JoinColumn(name = "user_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private User user;
-
-    @Column(check = @CheckConstraint(constraint = "duration >= 0"))
-    private Integer duration;
+    @Id
+    private UUID id;
 
     public RestTimerCategoryOverride(
+            @NonNull UUID id,
             @NonNull User user,
             @NonNull RestTimerCategory category,
             Integer duration) {
-        this.id = new RestTimerCategoryOverrideId(user.getId(), category);
+        this.id = id;
         this.user = user;
+        this.category = category;
         this.duration = duration;
     }
+
+    @ManyToOne(fetch = LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RestTimerCategory category;
+
+    @Column(check = @CheckConstraint(constraint = "duration >= 0"))
+    private Integer duration;
 }

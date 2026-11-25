@@ -25,9 +25,9 @@ class SettingMappingTest {
         em.persist(new WorkoutSetting(first, true, false));
         em.persist(new StatisticsSetting(first, null));
         em.persist(new StatisticsSetting(second, "[]"));
-        var category = new RestTimerCategoryOverride(first, RestTimerCategory.CORE, null);
-        var otherCategory = new RestTimerCategoryOverride(second, RestTimerCategory.CORE, 60);
-        var exercise = new RestTimerExerciseOverride(first, "squat", 0);
+        var category = new RestTimerCategoryOverride(UUID.randomUUID(), first, RestTimerCategory.CORE, null);
+        var otherCategory = new RestTimerCategoryOverride(UUID.randomUUID(), second, RestTimerCategory.CORE, 60);
+        var exercise = new RestTimerExerciseOverride(UUID.randomUUID(), first, "squat", 0);
         em.persist(category);
         em.persist(otherCategory);
         em.persist(exercise);

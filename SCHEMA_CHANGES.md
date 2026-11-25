@@ -41,7 +41,7 @@ Server enum columns store the uppercase Java constant name. Update client storag
 
 ## Equipment weight setting versions
 
-Track each equipment configuration by `(gym_id, equipment_id)` and its own version. When updating client sync, use the configuration's version for edits to its weight method, bar weight, ranges, and plates.
+Identify each equipment configuration by a deterministic sync UUID derived from its gym and equipment, as for other keyed settings. The pair `(gym_id, equipment_id)` stays unique. Each configuration has its own version. When updating client sync, use the configuration's version for edits to its weight method, bar weight, ranges, and plates.
 
 ## Equipment weight range positions
 
@@ -66,7 +66,7 @@ Reset a customization by deleting its scheme. Resolve an exercise override first
 
 ## Workout and statistics settings
 
-- Identify rest timer overrides by `(user_id, category)` or `(user_id, exercise_id)`. The server has no additional sync UUID for these rows.
+- Identify each rest timer override by the client's deterministic keyed-settings UUID. The pairs `(user_id, category)` and `(user_id, exercise_id)` stay unique. Every device must derive the same ID for the same pair so that concurrent offline edits target one resource.
 - Map client `exercise_key` to server `exercise_id` and `duration_seconds` to `duration`. Duration remains an integer number of seconds. Null clears an override and zero explicitly disables the wait.
 - Preserve SQL null for unconfigured statistics favorites and a JSON empty array for an explicitly empty selection.
 - Store the home selection in `users.program_id` or `users.workout_id`. A table check prevents both from being populated; both may be null before a selection. Update client storage and sync to use these references instead of `program_state.active_program_run_id`.
@@ -79,4 +79,5 @@ Reset a customization by deleting its scheme. Resolve an exercise override first
 - Pull returns operations in sequence order and no longer returns `resources`. Each change carries the resource type, resource ID, change kind, resulting version, and the values the server applied. Apply the changes in order.
 - When a resource has unsent local changes, treat the keys of each pulled change's values as the fields the server changed. Remove the `logicalFields` expansion of nested payloads.
 - Record row deletions in `sync_tombstones` by user, resource type, and resource ID.
-- The following remain to be decided: the resource ID format for rows with composite keys, such as rest timer overrides; whether deleting a parent records a tombstone for each child; and how to handle a change that references a deleted parent or a duplicate sort key.
+- Every synced row has a UUID resource ID. Workouts and other user-created rows use random UUIDs. Rows that must be unique per key, such as rest timer overrides and equipment configurations, use deterministic UUIDs.
+- The following remain to be decided: whether deleting a parent records a tombstone for each child, and how to handle a change that references a deleted parent or a duplicate sort key.
