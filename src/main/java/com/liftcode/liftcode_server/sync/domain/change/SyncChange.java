@@ -1,5 +1,6 @@
 package com.liftcode.liftcode_server.sync.domain.change;
 
+import lombok.Getter;
 import lombok.NonNull;
 
 import java.util.Collections;
