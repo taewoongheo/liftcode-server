@@ -19,6 +19,7 @@ public class SyncValuesReader {
     public SyncValuesReader(JsonMapper jsonMapper) {
         this.mapper = jsonMapper.rebuild()
                 .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .enable(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES)
                 .build();
     }
 

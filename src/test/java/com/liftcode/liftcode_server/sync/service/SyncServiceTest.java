@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -192,6 +193,31 @@ class SyncServiceTest {
 
         assertThatThrownBy(() -> syncService.push(user.getId(), request))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("Program 생성에 name 을 null 로 보내면 요청을 거부한다")
+    void rejectCreateWithNullName() {
+        User user = newUser();
+        Map<String, Object> values = new HashMap<>();
+        values.put("name", null);
+        values.put("progressStartedAt", "2026-11-26T09:00:00Z");
+        PushRequest request = pushRequest(List.of(createProgram(values)));
+
+        assertThatThrownBy(() -> syncService.push(user.getId(), request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("name");
+    }
+
+    @Test
+    @DisplayName("Program 생성에 progressStartedAt 이 없으면 요청을 거부한다")
+    void rejectCreateWithoutProgressStartedAt() {
+        User user = newUser();
+        PushRequest request = pushRequest(List.of(createProgram(Map.of("name", "ProgramA"))));
+
+        assertThatThrownBy(() -> syncService.push(user.getId(), request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("progressStartedAt");
     }
 
     @Test
