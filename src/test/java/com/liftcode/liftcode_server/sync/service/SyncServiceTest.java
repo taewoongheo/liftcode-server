@@ -54,7 +54,7 @@ class SyncServiceTest {
     @Test
     @DisplayName("Program 생성 시 Program 과 ChangeLog 가 저장된다")
     void syncCreateProgram() {
-        User user = userRepository.save(new User(UUID.randomUUID()));
+        User user = newUser();
         PushRequest request = pushRequest(List.of(
                 createProgram(Map.of("name", "ProgramA", "progressStartedAt", "2026-11-26T09:00:00Z")),
                 createProgram(Map.of("name", "ProgramB", "progressStartedAt", "2026-11-26T09:00:00Z"))));
@@ -66,7 +66,7 @@ class SyncServiceTest {
     }
 
     @Test
-    @DisplayName("생성이 반영되면 APPLIED 결과에 sequence 와 각 리소스의 첫 버전(1)을 담아 응답한다")
+    @DisplayName("생성이 반영되면 APPLIED 결과에 sequence 와 각 리소스의 첫 버전(0)을 담아 응답한다")
     void returnAppliedResultWithFirstVersion() {
         User user = newUser();
         PushChange programA = createProgram(programValues("ProgramA"));
@@ -81,8 +81,8 @@ class SyncServiceTest {
         assertThat(result.status()).isEqualTo(APPLIED);
         assertThat(result.sequence()).isNotNull();
         assertThat(result.resources()).containsExactly(
-                new ResourceVersion(PROGRAM, programA.resourceId(), 1),
-                new ResourceVersion(PROGRAM, programB.resourceId(), 1));
+                new ResourceVersion(PROGRAM, programA.resourceId(), 0),
+                new ResourceVersion(PROGRAM, programB.resourceId(), 0));
     }
 
     @Test
@@ -97,8 +97,8 @@ class SyncServiceTest {
 
         SyncChangeLog changeLog = syncChangeLogRepository.findById(response.results().get(0).sequence()).orElseThrow();
         assertThat(changeLog.getChanges()).containsExactly(
-                new SyncChange(PROGRAM, programA.resourceId(), CREATE, 1, programA.values()),
-                new SyncChange(PROGRAM, programB.resourceId(), CREATE, 1, programB.values()));
+                new SyncChange(PROGRAM, programA.resourceId(), CREATE, 0, programA.values()),
+                new SyncChange(PROGRAM, programB.resourceId(), CREATE, 0, programB.values()));
     }
 
     @Test
@@ -160,7 +160,7 @@ class SyncServiceTest {
     @Test
     @DisplayName("Program values 에 명세에 없는 키가 있으면 요청을 거부한다")
     void rejectUnknownProgramValueKey() {
-        User user = userRepository.save(new User(UUID.randomUUID()));
+        User user = newUser();
         PushRequest request = pushRequest(List.of(
                 createProgram(Map.of(
                         "name", "ProgramA",
@@ -205,7 +205,7 @@ class SyncServiceTest {
     }
 
     private User newUser() {
-        return userRepository.save(new User(UUID.randomUUID()));
+        return userRepository.save(new User("tester"));
     }
 
     private static Map<String, Object> programValues(String name) {

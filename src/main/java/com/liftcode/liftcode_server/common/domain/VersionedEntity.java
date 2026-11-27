@@ -20,7 +20,7 @@ public abstract class VersionedEntity {
     @Version
     @ColumnDefault("0")
     @Column(nullable = false)
-    private int version;
+    private Integer version;
 
     @CreationTimestamp
     @ColumnDefault("CURRENT_TIMESTAMP")

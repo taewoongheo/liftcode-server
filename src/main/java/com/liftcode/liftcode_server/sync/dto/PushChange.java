@@ -10,5 +10,5 @@ public record PushChange(
         SyncResourceType resourceType,
         UUID resourceId,
         SyncChangeKind changeKind,
-        int baseVersion,
+        Integer baseVersion,
         Map<String, Object> values) {}

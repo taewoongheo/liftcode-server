@@ -74,10 +74,22 @@ Reset a customization by deleting its scheme. Resolve an exercise override first
 ## Row-level sync
 
 - Sync each server row as its own resource with its own ID and version. A workout, each of its exercises, and each of its sets are separate resources, as are program items. Replace the aggregate workout payload (`exerciseList`, `setLists`) and the program `removedItemIds` field with one change per row.
-- A push change carries the resource type, resource ID, change kind, base version, and values. An update sends only the changed fields. A delete sends no values. Resource types and change kinds use uppercase constant names, such as `WORKOUT_SET` and `UPDATE`.
+- A push change carries the resource type, resource ID, change kind, base version, and values. An update sends only the changed fields. A delete sends no values. Resource types, change kinds, and push result statuses use uppercase constant names, such as `WORKOUT_SET`, `UPDATE`, and `APPLIED`. The client currently sends and expects lowercase values, such as `program`, `create`, and `applied`.
 - The server records each applied operation in `sync_change_log`. Its server-assigned `sequence` is the pull cursor. Retrying an operation with the same `operationId` applies it once.
 - Pull returns operations in sequence order and no longer returns `resources`. Each change carries the resource type, resource ID, change kind, resulting version, and the values the server applied. Apply the changes in order.
 - When a resource has unsent local changes, treat the keys of each pulled change's values as the fields the server changed. Remove the `logicalFields` expansion of nested payloads.
 - Record row deletions in `sync_tombstones` by user, resource type, and resource ID.
 - Every synced row has a UUID resource ID. Workouts and other user-created rows use random UUIDs. Rows that must be unique per key, such as rest timer overrides and equipment configurations, use deterministic UUIDs.
 - The following remain to be decided: whether deleting a parent records a tombstone for each child, and how to handle a change that references a deleted parent or a duplicate sort key.
+
+## Server versions
+
+The server assigns version 0 to a newly created resource and increments the version by 1 for each applied change. The client currently uses 0 to mean that a resource is not on the server and expects the first version to be 1. Update the client as follows.
+
+- Represent a resource that is not on the server with a null `server_version`. Make every local `server_version` column nullable and keep the non-negative check for non-null values. The columns are defined in `src/infrastructure/db/schema.ts` and `src/domains/goal/schema.ts`. When migrating a local database, set rows with `server_version = 0` to null.
+- Send a null `baseVersion` for a create. An update or delete sends the resource's current server version, which can be 0.
+- Replace the comparisons with `INITIAL_SERVER_VERSION` that choose between a create and an update with null checks. `settings-resources.ts` compares with the literal 0. When resetting a local account, `local-account.ts` sets `server_version` to 0; set it to null instead.
+- When deleting a resource whose create is still queued, `workout-session/repository.ts` and `gym/gym-profile.ts` send `FIRST_SERVER_VERSION` (1) as the delete's base version. Send 0, the version that the queued create will produce.
+- `push/parse-response.ts` rejects an applied result whose version is below 1. Accept 0.
+- Version arithmetic that adds 1 for each applied change, in `conflict/resolve-pull-conflicts.ts` and `push/redundant-delete.ts`, stays valid.
+- Remaining decision: whether migrated server data keeps its existing versions, which start at 1, so that synced local rows keep valid versions.
