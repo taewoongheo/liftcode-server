@@ -83,7 +83,7 @@ public class SyncService {
                 ProgramValues values = valuesReader.read(change.values(), ProgramValues.class);
                 // 이렇게 null 을 직접 검사하면 필드가 추가될 때마다 검사해야되는데, valuesReader 에서 던지는 예외를 잡아서 처리하는게 나을 듯
                 if (values.name() == null) {
-                    throw new IllegalStateException("이름을 입력해주세요");
+                    throw new IllegalArgumentException("이름을 입력해주세요");
                 }
                 creations.add(new ProgramCreation(change, values));
             }
