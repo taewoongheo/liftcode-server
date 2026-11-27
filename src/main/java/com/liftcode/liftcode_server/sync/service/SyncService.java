@@ -77,6 +77,9 @@ public class SyncService {
 
         for (PushChange change : operation.changes()) {
             if (change.resourceType() == PROGRAM && change.changeKind() == CREATE) {
+                if (change.baseVersion() != null) {
+                    throw new IllegalArgumentException("잘못된 요청입니다");
+                }
                 ProgramValues values = valuesReader.read(change.values(), ProgramValues.class);
                 // 이렇게 null 을 직접 검사하면 필드가 추가될 때마다 검사해야되는데, valuesReader 에서 던지는 예외를 잡아서 처리하는게 나을 듯
                 if (values.name() == null) {

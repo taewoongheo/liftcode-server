@@ -195,10 +195,10 @@ class SyncServiceTest {
     }
 
     @Test
-    @DisplayName("생성 요청의 baseVersion 이 0 이 아니면 요청을 거부한다")
-    void rejectCreateWithNonZeroBaseVersion() {
+    @DisplayName("생성 요청에 baseVersion 이 있으면 요청을 거부한다")
+    void rejectCreateWithBaseVersion() {
         User user = newUser();
-        PushChange change = new PushChange(PROGRAM, UUID.randomUUID(), CREATE, 3, programValues("ProgramA"));
+        PushChange change = new PushChange(PROGRAM, UUID.randomUUID(), CREATE, 0, programValues("ProgramA"));
 
         assertThatThrownBy(() -> syncService.push(user.getId(), pushRequest(List.of(change))))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -217,7 +217,7 @@ class SyncServiceTest {
     }
 
     private static PushChange createProgram(UUID programId, Map<String, Object> values) {
-        return new PushChange(PROGRAM, programId, CREATE, 0, values);
+        return new PushChange(PROGRAM, programId, CREATE, null, values);
     }
 
     private static PushRequest pushRequest(List<PushChange> changes) {
