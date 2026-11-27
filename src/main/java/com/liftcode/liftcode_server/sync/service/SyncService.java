@@ -68,6 +68,9 @@ public class SyncService {
                                 change.resourceType(),
                                 change.resourceId(),
                                 change.changeKind(),
+                                /**
+                                 * TODO: 로그 반영 후 버전이 들어가도록 수정
+                                 */
                                 change.baseVersion(),
                                 change.values()
                         ));

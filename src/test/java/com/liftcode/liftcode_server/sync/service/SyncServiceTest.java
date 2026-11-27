@@ -51,8 +51,6 @@ class SyncServiceTest {
     @Autowired
     private EntityManager em;
 
-    // ---- 생성 성공 ----
-
     @Test
     @DisplayName("Program 생성 시 Program 과 ChangeLog 가 저장된다")
     void syncCreateProgram() {
@@ -103,8 +101,6 @@ class SyncServiceTest {
                 new SyncChange(PROGRAM, programB.resourceId(), CREATE, 1, programB.values()));
     }
 
-    // ---- 재시도 ----
-
     @Test
     @DisplayName("같은 operation 을 다시 보내면 다시 반영하지 않고 처음과 같은 결과를 돌려준다")
     void applyRetriedOperationOnce() {
@@ -119,8 +115,6 @@ class SyncServiceTest {
         assertThat(retry.results()).isEqualTo(first.results());
         assertThat(changeLogCount(user)).isEqualTo(1);
     }
-
-    // ---- 이미 있는 ID 로 생성 ----
 
     @Test
     @DisplayName("이미 있는 내 리소스 ID 로 생성하면 CONFLICT 로 응답하고 기존 행은 바뀌지 않는다")
@@ -209,8 +203,6 @@ class SyncServiceTest {
         assertThatThrownBy(() -> syncService.push(user.getId(), pushRequest(List.of(change))))
                 .isInstanceOf(IllegalArgumentException.class);
     }
-
-    // ---- helpers ----
 
     private User newUser() {
         return userRepository.save(new User(UUID.randomUUID()));

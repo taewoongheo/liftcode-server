@@ -19,7 +19,7 @@ public class SyncController {
 
     @PostMapping("/sync/{userId}")
     public ResponseEntity<PushResponse> push(
-            @RequestParam UUID userId,
+            @PathVariable("userId") UUID userId,
             @RequestBody PushRequest request) {
 
         PushResponse response = syncService.push(userId, request);
