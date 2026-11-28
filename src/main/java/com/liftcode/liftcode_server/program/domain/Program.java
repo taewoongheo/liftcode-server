@@ -22,10 +22,11 @@ public class Program extends VersionedEntity {
     @Id
     private UUID id;
 
-    public Program(@NonNull UUID id, @NonNull User user, @NonNull String name) {
+    public Program(@NonNull UUID id, @NonNull User user, @NonNull String name, @NonNull Instant progressStartedAt) {
         this.id = id;
         this.user = user;
         this.name = name;
+        this.progressStartedAt = progressStartedAt;
     }
 
     @ManyToOne(fetch = LAZY, optional = false)
@@ -35,11 +36,6 @@ public class Program extends VersionedEntity {
     @Column(nullable = false, check = @CheckConstraint(constraint = "length(trim(name)) between 1 and 50"))
     private String name;
 
-    @Column(name = "progress_started_at")
+    @Column(name = "progress_started_at", nullable = false)
     private Instant progressStartedAt;
-
-    public void startProgress(@NonNull Instant startedAt) {
-        this.progressStartedAt = startedAt;
-    }
-
 }

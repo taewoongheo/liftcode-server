@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sync push spec: create a program and its workouts</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1d1f23; --muted: #5d6470; --line: #e3e6ea;
+    --code-bg: #f5f6f8; --accent: #2f6fde; --ok: #1f8a4c; --warn: #b26a00; --bad: #c2362f;
+    --chip-bg: #eef3fc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17191c; --fg: #e6e8eb; --muted: #9aa1ab; --line: #2d3137;
+      --code-bg: #1f2226; --accent: #7aa7ff; --ok: #5cc98a; --warn: #f0b354; --bad: #ff7b72;
+      --chip-bg: #222a38;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+  }
+  main { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 26px; line-height: 1.3; margin: 0 0 8px; }
+  h2 { font-size: 19px; margin: 48px 0 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+  h3 { font-size: 16px; margin: 28px 0 8px; }
+  p, li { color: var(--fg); }
+  .lede { color: var(--muted); margin: 0 0 24px; }
+  code { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; }
+  pre code { background: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  td code { white-space: nowrap; }
+  .chip { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--chip-bg); color: var(--accent); }
+  .note { border-left: 3px solid var(--accent); padding: 8px 14px; margin: 16px 0; background: var(--code-bg); border-radius: 0 6px 6px 0; }
+  .note.warn { border-color: var(--warn); }
+  .note.bad { border-color: var(--bad); }
+  .note p { margin: 4px 0; }
+  ol.steps > li { margin-bottom: 10px; }
+  .muted { color: var(--muted); }
+  nav ol { columns: 2; padding-left: 20px; margin: 0; }
+  nav { margin: 0 0 8px; font-size: 14px; }
+  nav a { color: var(--accent); text-decoration: none; }
+  .ok { color: var(--ok); font-weight: 600; }
+  .bad { color: var(--bad); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Sync push spec: create a program and its workouts</h1>
+<p class="lede">How the client asks the server to create one <code>PROGRAM</code> row and its <code>WORKOUT</code> rows, what the server does with the request, and what it returns. This step covers creation only.</p>
+
+<nav>
+  <ol>
+    <li><a href="#scope">Scope</a></li>
+    <li><a href="#endpoint">Endpoint</a></li>
+    <li><a href="#request">Request</a></li>
+    <li><a href="#values">Values per resource type</a></li>
+    <li><a href="#processing">Server processing</a></li>
+    <li><a href="#response">Response</a></li>
+    <li><a href="#errors">Errors</a></li>
+    <li><a href="#log">What the change log stores</a></li>
+    <li><a href="#types">Server types to create</a></li>
+    <li><a href="#client-diff">Differences from the current client</a></li>
+    <li><a href="#choices">Choices made in this spec</a></li>
+    <li><a href="#open">Open decisions</a></li>
+  </ol>
+</nav>
+
+<h2 id="scope">1. Scope</h2>
+<table>
+  <tr><th>Covered</th><th>Not covered yet</th></tr>
+  <tr>
+    <td>
+      <code>PROGRAM</code> create<br>
+      <code>WORKOUT</code> create<br>
+      Retrying the same operation<br>
+      Conflict when the row already exists
+    </td>
+    <td>
+      <code>PROGRAM_ITEM</code> rows, which link a program to its workouts<br>
+      <code>WORKOUT_EXERCISE</code> and <code>WORKOUT_SET</code> rows<br>
+      <code>PROGRAM_RUN</code> and <code>PROGRAM_STATE</code><br>
+      <code>UPDATE</code>, <code>DELETE</code>, pull, device registration
+    </td>
+  </tr>
+</table>
+<p>Without <code>PROGRAM_ITEM</code> rows, the program and its workouts are separate rows with no link between them. That is expected at this step.</p>
+
+<h2 id="endpoint">2. Endpoint</h2>
+<pre><code>POST /sync/push
+Content-Type: application/json
+X-User-Id: 6c1d8e2a-4b3f-4a7e-9d5c-0e2f4a6b8c1d</code></pre>
+<div class="note warn">
+  <p><strong>Temporary:</strong> until authentication exists, the client sends the user ID in the <code>X-User-Id</code> header. Replace the header with the authenticated user later. Never take the user ID from the request body.</p>
+</div>
+
+<h2 id="request">3. Request</h2>
+<p>One request carries one or more operations. One operation is one user action, such as "create a program". All changes in an operation apply together or not at all.</p>
+
+<pre><code>{
+  "deviceId": "3f2a6c1e-8d4b-4c7a-9e1f-2b5d7a9c0e41",
+  "operations": [
+    {
+      "operationId": "a1c9e2f4-5b7d-4e8a-9c3f-1d2e4f6a8b0c",
+      "occurredAt": "2026-11-26T09:00:00Z",
+      "changes": [
+        {
+          "resourceType": "PROGRAM",
+          "resourceId": "0d8f3b2a-6c4e-4f1a-8b9d-7e5c3a1f2b4d",
+          "changeKind": "CREATE",
+          "baseVersion": 0,
+          "values": { "name": "Strength 5x5", "progressStartedAt": null }
+        },
+        {
+          "resourceType": "WORKOUT",
+          "resourceId": "5e7a9c1b-3d5f-4a8c-9e2b-4f6a8c0d2e1f",
+          "changeKind": "CREATE",
+          "baseVersion": 0,
+          "values": { "name": "Day A" }
+        },
+        {
+          "resourceType": "WORKOUT",
+          "resourceId": "9b3d5f7a-1c3e-4b6d-8f0a-2c4e6a8b0d3f",
+          "changeKind": "CREATE",
+          "baseVersion": 0,
+          "values": { "name": "Day B" }
+        }
+      ]
+    }
+  ]
+}</code></pre>
+
+<h3>Request fields</h3>
+<table>
+  <tr><th>Field</th><th>Type</th><th>Rule</th></tr>
+  <tr><td><code>deviceId</code></td><td>UUID</td><td>Required. Stored in each change log row.</td></tr>
+  <tr><td><code>operations</code></td><td>array</td><td>Required. At least one operation. The server processes operations in array order.</td></tr>
+  <tr><td><code>operations[].operationId</code></td><td>UUID</td><td>Required. Generated by the client. Unique per user. A retry sends the same ID.</td></tr>
+  <tr><td><code>operations[].occurredAt</code></td><td>ISO-8601 instant</td><td>Required. The client's clock when the user acted. The server stores it but does not order by it.</td></tr>
+  <tr><td><code>operations[].changes</code></td><td>array</td><td>Required. At least one change. The same <code>resourceType</code> and <code>resourceId</code> pair must not appear twice in one operation.</td></tr>
+</table>
+
+<h3>Change fields</h3>
+<table>
+  <tr><th>Field</th><th>Type</th><th>Rule for this step</th></tr>
+  <tr><td><code>resourceType</code></td><td>enum</td><td><code>PROGRAM</code> or <code>WORKOUT</code>.</td></tr>
+  <tr><td><code>resourceId</code></td><td>UUID</td><td>Generated by the client with a random UUID. Becomes the row's primary key.</td></tr>
+  <tr><td><code>changeKind</code></td><td>enum</td><td><code>CREATE</code>.</td></tr>
+  <tr><td><code>baseVersion</code></td><td>integer</td><td>Must be <code>0</code> for a create. It means "the client has never seen a server version of this row".</td></tr>
+  <tr><td><code>values</code></td><td>object</td><td>Required for a create. Keys depend on the resource type. See the next section.</td></tr>
+</table>
+
+<h2 id="values">4. Values per resource type</h2>
+<p>A create sends every field of the row. A key that is left out is treated as <code>null</code>. The server rejects any key that the table does not list.</p>
+
+<h3><span class="chip">PROGRAM</span> values</h3>
+<table>
+  <tr><th>Key</th><th>Type</th><th>Required</th><th>Rule</th><th>Entity field</th></tr>
+  <tr><td><code>name</code></td><td>string</td><td>Yes</td><td>1 to 50 characters after trimming</td><td><code>Program.name</code></td></tr>
+  <tr><td><code>progressStartedAt</code></td><td>ISO-8601 instant or <code>null</code></td><td>No</td><td>When present, passed to <code>startProgress</code></td><td><code>Program.progressStartedAt</code></td></tr>
+</table>
+
+<h3><span class="chip">WORKOUT</span> values</h3>
+<table>
+  <tr><th>Key</th><th>Type</th><th>Required</th><th>Rule</th><th>Entity field</th></tr>
+  <tr><td><code>name</code></td><td>string</td><td>Yes</td><td>1 to 40 characters after trimming</td><td><code>Workout.name</code></td></tr>
+</table>
+<p class="muted">The length rules match the check constraints on the entities. Validating them in the service gives the client a 400 response before the database rejects the row.</p>
+
+<h2 id="processing">5. Server processing</h2>
+<p>The whole request runs in one transaction.</p>
+<ol class="steps">
+  <li><strong>Lock the user.</strong> Take the per-user exclusive lock before anything else, so change log sequences commit in the order they were assigned.</li>
+  <li><strong>Validate the whole request.</strong> Check the shape, the resource types, <code>baseVersion = 0</code>, and the values for every change. If anything fails, return 400 and apply nothing.</li>
+  <li><strong>For each operation, in order:</strong>
+    <ol type="a">
+      <li><strong>Already applied?</strong> Look up <code>sync_change_log</code> by <code>(user_id, operation_id)</code>. If the row exists, build an <code>APPLIED</code> result from it and move to the next operation. Do not apply the changes again.</li>
+      <li><strong>Check for conflicts.</strong> A create conflicts when a row with that <code>resourceId</code> already exists for this user. Collect every conflicting change.</li>
+      <li><strong>On conflict, stop.</strong> Add one <code>CONFLICT</code> result for this operation and return. Do not process later operations. Operations already applied in this request stay applied.</li>
+      <li><strong>Apply.</strong> Create the <code>Program</code> and <code>Workout</code> entities from the values and save them.</li>
+      <li><strong>Flush and read versions.</strong> <code>@Version</code> is written at flush, so call <code>flush()</code> before reading the versions for the result.</li>
+      <li><strong>Write the change log.</strong> Insert one <code>SyncChangeLog</code> row. Its <code>sequence</code> goes into the result.</li>
+      <li>Add an <code>APPLIED</code> result.</li>
+    </ol>
+  </li>
+  <li><strong>Commit</strong> and return the results.</li>
+</ol>
+
+<div class="note">
+  <p><strong>Why stop at the first conflict:</strong> the client rejects any result that comes after a conflict. Later operations may also depend on the one that conflicted, for example an update to a program whose create failed.</p>
+</div>
+
+<h2 id="response">6. Response</h2>
+<p><code>200 OK</code> with one result per processed operation, in request order. After a conflict the list ends, so it can be shorter than <code>operations</code>.</p>
+
+<h3>All operations applied</h3>
+<pre><code>{
+  "results": [
+    {
+      "operationId": "a1c9e2f4-5b7d-4e8a-9c3f-1d2e4f6a8b0c",
+      "status": "APPLIED",
+      "sequence": 42,
+      "resources": [
+        { "resourceType": "PROGRAM", "resourceId": "0d8f3b2a-6c4e-4f1a-8b9d-7e5c3a1f2b4d", "version": 1 },
+        { "resourceType": "WORKOUT", "resourceId": "5e7a9c1b-3d5f-4a8c-9e2b-4f6a8c0d2e1f", "version": 1 },
+        { "resourceType": "WORKOUT", "resourceId": "9b3d5f7a-1c3e-4b6d-8f0a-2c4e6a8b0d3f", "version": 1 }
+      ]
+    }
+  ]
+}</code></pre>
+
+<h3>Conflict</h3>
+<p>The workout <code>Day A</code> already exists on the server at version 3.</p>
+<pre><code>{
+  "results": [
+    {
+      "operationId": "a1c9e2f4-5b7d-4e8a-9c3f-1d2e4f6a8b0c",
+      "status": "CONFLICT",
+      "resources": [
+        { "resourceType": "WORKOUT", "resourceId": "5e7a9c1b-3d5f-4a8c-9e2b-4f6a8c0d2e1f", "version": 3 }
+      ]
+    }
+  ]
+}</code></pre>
+
+<h3>Result rules the client enforces</h3>
+<table>
+  <tr><th>Status</th><th>Rule</th></tr>
+  <tr><td><span class="ok">APPLIED</span></td><td><code>sequence</code> is an integer ≥ 1. <code>resources</code> lists every resource in the operation exactly once. Each <code>version</code> is ≥ 1.</td></tr>
+  <tr><td><span class="bad">CONFLICT</span></td><td>No <code>sequence</code>. <code>resources</code> lists only the conflicting resources and is not empty. Each <code>version</code> is the server's current version, ≥ 0.</td></tr>
+  <tr><td>Both</td><td><code>results[i].operationId</code> matches <code>operations[i].operationId</code>. Nothing follows a conflict.</td></tr>
+</table>
+
+<h3>Retry</h3>
+<p>The client did not receive the response and sends the same request again. Step 3a finds operation <code>a1c9…</code> in the change log, so the server returns the same <code>APPLIED</code> result with <code>sequence: 42</code> and creates nothing.</p>
+
+<h2 id="errors">7. Errors</h2>
+<table>
+  <tr><th>Status</th><th>When</th></tr>
+  <tr><td><code>400</code></td><td>Malformed JSON, a missing required field, an unknown <code>resourceType</code>, a <code>changeKind</code> other than <code>CREATE</code>, <code>baseVersion</code> other than 0, a duplicate resource in one operation, an invalid or unknown value key, or a resource ID that belongs to another user. Nothing is applied.</td></tr>
+  <tr><td><code>401</code></td><td><code>X-User-Id</code> is missing or no such user exists.</td></tr>
+</table>
+<p class="muted">Checked exceptions do not roll back a <code>@Transactional</code> method. Throw unchecked exceptions such as <code>IllegalArgumentException</code> and map them to 400 in a <code>@RestControllerAdvice</code>.</p>
+
+<h2 id="log">8. What the change log stores</h2>
+<p>For the applied request in section 6, <code>sync_change_log</code> gets one row.</p>
+<table>
+  <tr><th>Column</th><th>Value</th></tr>
+  <tr><td><code>sequence</code></td><td><code>42</code> (assigned by the database)</td></tr>
+  <tr><td><code>user_id</code></td><td>from <code>X-User-Id</code></td></tr>
+  <tr><td><code>operation_id</code></td><td><code>a1c9e2f4-…</code></td></tr>
+  <tr><td><code>device_id</code></td><td><code>3f2a6c1e-…</code></td></tr>
+  <tr><td><code>occurred_at</code></td><td><code>2026-11-26T09:00:00Z</code></td></tr>
+  <tr><td><code>changes</code></td><td>the JSON below</td></tr>
+</table>
+<pre><code>[
+  { "resourceType": "PROGRAM", "resourceId": "0d8f3b2a-…", "changeKind": "CREATE", "version": 1,
+    "values": { "name": "Strength 5x5", "progressStartedAt": null } },
+  { "resourceType": "WORKOUT", "resourceId": "5e7a9c1b-…", "changeKind": "CREATE", "version": 1,
+    "values": { "name": "Day A" } },
+  { "resourceType": "WORKOUT", "resourceId": "9b3d5f7a-…", "changeKind": "CREATE", "version": 1,
+    "values": { "name": "Day B" } }
+]</code></pre>
+<p>The stored change has <code>version</code>, the version after the change. The pushed change has <code>baseVersion</code>, the version the client started from. For a create, store every field, including those that were left out as <code>null</code>, so a device that pulls this change can build the whole row.</p>
+
+<h2 id="types">9. Server types to create</h2>
+<p>Request and response bodies are DTOs. Do not bind the request to the <code>SyncChangeLog</code> entity.</p>
+<table>
+  <tr><th>Type</th><th>Fields</th><th>Note</th></tr>
+  <tr><td><code>PushRequest</code></td><td><code>deviceId</code>, <code>operations</code></td><td></td></tr>
+  <tr><td><code>PushOperation</code></td><td><code>operationId</code>, <code>occurredAt</code>, <code>changes</code></td><td></td></tr>
+  <tr><td><code>PushChange</code></td><td><code>resourceType</code>, <code>resourceId</code>, <code>changeKind</code>, <code>baseVersion</code>, <code>values</code></td><td>Not <code>SyncChange</code>. That type holds the resulting <code>version</code>.</td></tr>
+  <tr><td><code>PushResponse</code></td><td><code>results</code></td><td></td></tr>
+  <tr><td><code>PushResult</code></td><td><code>operationId</code>, <code>status</code>, <code>sequence</code> (null on conflict), <code>resources</code></td><td></td></tr>
+  <tr><td><code>ResourceVersion</code></td><td><code>resourceType</code>, <code>resourceId</code>, <code>version</code></td><td></td></tr>
+  <tr><td><code>ProgramValues</code></td><td><code>name</code>, <code>progressStartedAt</code></td><td>Convert <code>values</code> with <code>JsonMapper.convertValue</code>.</td></tr>
+  <tr><td><code>WorkoutValues</code></td><td><code>name</code></td><td></td></tr>
+</table>
+
+<h2 id="client-diff">10. Differences from the current client</h2>
+<p>The client in <code>../LiftCode</code> must change to send this request.</p>
+<table>
+  <tr><th>Current client</th><th>This spec</th></tr>
+  <tr><td>Each operation lists its changes under <code>resources</code></td><td><code>changes</code>, the same name the change log and pull use</td></tr>
+  <tr><td>Lowercase <code>"program"</code>, <code>"create"</code></td><td>Uppercase <code>PROGRAM</code>, <code>CREATE</code></td></tr>
+  <tr><td>Lowercase <code>"applied"</code>, <code>"conflict"</code></td><td>Uppercase <code>APPLIED</code>, <code>CONFLICT</code></td></tr>
+  <tr><td>Program values hold <code>trainingMode</code>, <code>name</code>, <code>itemList</code>, <code>removedItemIds</code></td><td><code>name</code>, <code>progressStartedAt</code>. Items become <code>PROGRAM_ITEM</code> rows in a later step.</td></tr>
+  <tr><td>Workout values hold <code>name</code>, <code>exerciseList</code>, <code>setLists</code></td><td><code>name</code>. Exercises and sets become their own rows in a later step.</td></tr>
+  <tr><td>Program creation also sends <code>PROGRAM_RUN</code> and <code>PROGRAM_STATE</code></td><td>Out of scope. The server rejects them with 400 for now.</td></tr>
+  <tr><td>The request carries <code>lastPulledSequence</code></td><td>Not used. The server ignores it.</td></tr>
+</table>
+
+<h2 id="choices">11. Choices made in this spec</h2>
+<p>Each of these could go another way. Change them if you disagree.</p>
+<table>
+  <tr><th>Choice</th><th>Alternative</th><th>Why this one</th></tr>
+  <tr>
+    <td>Validate the whole request first and return 400 for any problem</td>
+    <td>Report the error per operation in <code>results</code></td>
+    <td>The client has no "error" status. A malformed request is a bug, not a state to recover from.</td>
+  </tr>
+  <tr>
+    <td>Reject unknown value keys</td>
+    <td>Ignore them</td>
+    <td>Jackson ignores unknown keys by default, so a misspelled key would disappear without an error.</td>
+  </tr>
+  <tr>
+    <td>One transaction per request</td>
+    <td>One transaction per operation</td>
+    <td>Simpler. Per-operation transactions hold the lock for less time and commit partial progress. Consider them when requests get large.</td>
+  </tr>
+  <tr>
+    <td>Uppercase status names</td>
+    <td>Keep the client's lowercase names</td>
+    <td>Matches the uppercase rule for resource types and change kinds, and maps directly to a Java enum.</td>
+  </tr>
+</table>
+
+<h2 id="open">12. Open decisions</h2>
+<div class="note bad">
+  <p><strong>Version after create.</strong> The client requires version ≥ 1 in an <code>APPLIED</code> result, and treats 1 as the first server version. <code>VersionedEntity</code> inserts rows at version 0. Decide whether to store versions starting at 1, or keep 0 in the database and add 1 everywhere a version leaves the server.</p>
+</div>
+<div class="note bad">
+  <p><strong>Program row fields do not match.</strong> The client has <code>trainingMode</code> and the server has no column for it. The server has <code>progressStartedAt</code> and the client never sends it. Decide where each field lives before the program values are final.</p>
+</div>
+<div class="note warn">
+  <p><strong>Create on a deleted ID.</strong> If <code>sync_tombstones</code> already has the resource, decide whether the create is a conflict or a 400. With random UUIDs this only happens through a client bug.</p>
+</div>
+<div class="note warn">
+  <p><strong>Device registration.</strong> Decide whether push creates the <code>SyncDeviceState</code> row for an unknown <code>deviceId</code> or rejects the request until the device is initialized.</p>
+</div>
+
+</main>
+</body>
+</html>

@@ -4,12 +4,7 @@ import com.liftcode.liftcode_server.common.domain.VersionedEntity;
 import com.liftcode.liftcode_server.gym.domain.Gym;
 import com.liftcode.liftcode_server.program.domain.Program;
 import com.liftcode.liftcode_server.workout.domain.Workout;
-import jakarta.persistence.CheckConstraint;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
@@ -28,11 +23,11 @@ import static jakarta.persistence.FetchType.LAZY;
 public class User extends VersionedEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    public User(@NonNull UUID id) {
-        this.id = id;
-    }
+    @Column(nullable = false)
+    private String name;
 
     /**
      * TODO: Clear and flush the selected gym in the deletion service to advance the user version.
@@ -56,4 +51,7 @@ public class User extends VersionedEntity {
         defaultGym = gym;
     }
 
+    public User(@NonNull String name) {
+        this.name = name;
+    }
 }
